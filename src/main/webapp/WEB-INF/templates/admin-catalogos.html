@@ -126,26 +126,26 @@ input{
     background-color:#6c757d;
 }
 
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:10px;
-}
-
-th,td{
-    padding:10px;
-    border-bottom:1px solid #dee2e6;
-    text-align:left;
-}
-
-th{
-    background-color:#343a40;
-    color:white;
-}
-
-tr:hover{
-    background-color:#f1f3f5;
-}
+/* ── TABLA ── */
+		.table-scroll {
+		    max-height: 360px;
+		    overflow-y: auto;
+		    border: 1px solid #dee2e6;
+		    border-radius: 6px;
+		    margin-top: 10px;
+		}
+		.table-scroll table { margin-top: 0; }
+		table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+		th, td { padding: 7px 10px; border-bottom: 1px solid #dee2e6; text-align: left; vertical-align: middle; }
+		th {
+		    background-color: #343a40; color: white; font-weight: 600;
+		    text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px;
+		    position: sticky; top: 0; z-index: 1;
+		}
+		tr:hover { background-color: #f1f3f5; } .badge-rol {
+            display: inline-block; padding: 3px 8px; border-radius: 4px;
+            font-size: 0.75rem; font-weight: bold; font-family: monospace;
+        }
 
 /* Modal */
 
@@ -282,64 +282,64 @@ tr:hover{
 		</form>
 
         <h3>&#127758; Catálogo de Países</h3>
-
-        <table>
-
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>País</th>
-                <th>Estado</th>
-            </tr>
-            </thead>
-
-            <tbody>
-
-            <tr th:each="pais : ${paises}">
-
-                <td th:text="${pais.id}"></td>
-
-                <td th:text="${pais.nombre}"></td>
-
-				<td>
-
-				    <form th:action="@{/admin/catalogos/paises/estado}"
-				          method="post">
-
-				        <input type="hidden"
-				               name="id"
-				               th:value="${pais.id}" />
-
-				        <select name="estado"
-				                onchange="this.form.submit()">
-
-				            <option value="Inactivo"
-				                    th:selected="${pais.estado == 'Inactivo'}">
-				                Inactivo
-				            </option>
-
-				            <option value="Activo"
-				                    th:selected="${pais.estado == 'Activo'}">
-				                Activo
-				            </option>
-							
-							<option value="Eliminado"
-				                    th:selected="${pais.estado == 'Eliminado'}">
-				                Eliminado
-				            </option>
-
-				        </select>
-
-				    </form>
-
-				</td>
-
-            </tr>
-
-            </tbody>
-
-        </table>
-
+		<div class="table-scroll">
+	        <table>
+	
+	            <thead>
+	            <tr>
+	                <th>ID</th>
+	                <th>País</th>
+	                <th>Estado</th>
+	            </tr>
+	            </thead>
+	
+	            <tbody>
+	
+	            <tr th:each="pais : ${paises}">
+	
+	                <td th:text="${pais.id}"></td>
+	
+	                <td th:text="${pais.nombre}"></td>
+	
+					<td>
+	
+					    <form th:action="@{/admin/catalogos/paises/estado}"
+					          method="post">
+	
+					        <input type="hidden"
+					               name="id"
+					               th:value="${pais.id}" />
+	
+					        <select name="estado"
+					                onchange="this.form.submit()">
+	
+					            <option value="Inactivo"
+					                    th:selected="${pais.estado == 'Inactivo'}">
+					                Inactivo
+					            </option>
+	
+					            <option value="Activo"
+					                    th:selected="${pais.estado == 'Activo'}">
+					                Activo
+					            </option>
+								
+								<option value="Eliminado"
+					                    th:selected="${pais.estado == 'Eliminado'}">
+					                Eliminado
+					            </option>
+	
+					        </select>
+	
+					    </form>
+	
+					</td>
+	
+	            </tr>
+	
+	            </tbody>
+	
+	        </table>
+		</div>
     </div>
 
     <!-- ===================== -->
