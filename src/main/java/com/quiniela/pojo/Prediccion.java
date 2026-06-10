@@ -23,18 +23,22 @@ public class Prediccion {
     private Integer golesLocalPrediccion;
     private Integer golesVisitantePrediccion;
     private Integer puntosGanados;
+
+	private LocalDateTime fechaRegistro;
     
     public Prediccion() {
         this.puntosGanados = 0;
     }
 
-    public Prediccion(Long id, Usuario usuario, Partido partido, Integer golesLocalPrediccion, Integer golesVisitantePrediccion) {
+    public Prediccion(Long id, Usuario usuario, Partido partido, Integer golesLocalPrediccion, Integer golesVisitantePrediccion,
+					 LocalDateTime fechaRegistro) {
         this.id = id;
         this.usuario = usuario;
         this.partido = partido;
         this.golesLocalPrediccion = golesLocalPrediccion;
         this.golesVisitantePrediccion = golesVisitantePrediccion;
         this.puntosGanados = 0;
+		this.fechaRegistro = fechaRegistro;
     }
     
     public Long getId() { return id; }
@@ -54,4 +58,7 @@ public class Prediccion {
 
     public Integer getPuntosGanados() { return puntosGanados; }
     public void setPuntosGanados(Integer puntosGanados) { this.puntosGanados = puntosGanados; }
+
+	public LocalDateTime getFechaRegistro() { return fechaRegistro; }
+	public void setFechaRegistro(LocalDateTime fechaRegistro) { this.fechaRegistro = fechaRegistro; }
 }
