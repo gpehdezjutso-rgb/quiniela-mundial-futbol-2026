@@ -18,8 +18,7 @@ public class PrediccionDaoImpl implements PrediccionDao {
     private SessionFactory sessionFactory;
 
     @Override
-    public void guardar(Prediccion prediccion) {     
-        prediccion.setFechaRegistro(LocalDateTime.now());
+    public void guardar(Prediccion prediccion) {             
         sessionFactory.getCurrentSession().saveOrUpdate(prediccion);
         sessionFactory.getCurrentSession().flush(); 
     }
