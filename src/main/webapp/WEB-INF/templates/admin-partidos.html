@@ -22,10 +22,26 @@
         .btn-secondary { background-color: #6c757d; }
         .back-btn { display: inline-block; margin-bottom: 20px; color: #6c757d; text-decoration: none; font-weight: 500; }
         .back-btn:hover { color: #343a40; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
-        th, td { padding: 7px 9px; border-bottom: 1px solid #dee2e6; text-align: left; vertical-align: middle; }
-        th { background-color: #343a40; color: white; font-weight: 600; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; }
-        tr:hover { background-color: #f1f3f5; }
+		/* ── TABLA ── */
+				.table-scroll {
+				    max-height: 360px;
+				    overflow-y: auto;
+				    border: 1px solid #dee2e6;
+				    border-radius: 6px;
+				    margin-top: 10px;
+				}
+				.table-scroll table { margin-top: 0; }
+				table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+				th, td { padding: 7px 10px; border-bottom: 1px solid #dee2e6; text-align: left; vertical-align: middle; }
+				th {
+				    background-color: #343a40; color: white; font-weight: 600;
+				    text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px;
+				    position: sticky; top: 0; z-index: 1;
+				}
+				tr:hover { background-color: #f1f3f5; } .badge-rol {
+		            display: inline-block; padding: 3px 8px; border-radius: 4px;
+		            font-size: 0.75rem; font-weight: bold; font-family: monospace;
+		        }
         .input-gol { width: 40px; padding: 4px; text-align: center; border-radius: 4px; border: 1px solid #ccc; font-size: 0.85rem; }
         .badge-resultado { background-color: #212529; color: #ffc107; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
 
@@ -148,50 +164,52 @@
 		</div>
 
         <h3>&#128197; Encuentros Programados</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Local</th>
-                    <th>Marcador Oficial</th>
-					<th></th>					
-                    <th>Visitante</th>
-                    <th>Fecha y Hora</th>
-                    <th>Fase</th>
-                    <th>Grupo</th>
-                    <th>Estadio</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="p : ${partidos}">
-                    <td th:text="${p.id}" style="font-family:monospace;color:#6c757d;"></td>
-                    <td th:text="${p.equipoLocal != null ? p.equipoLocal : '-'}"></td>
-                    <td>
-                        <form th:action="@{/admin/partidos/resultado}" method="post" style="display:flex;gap:5px;align-items:center;">
-                            <input type="hidden" name="partidoId" th:value="${p.id}" />
-                            <input type="number" name="golesLocal" th:value="${p.golesLocal}"  min="0" placeholder="L" required class="input-gol" />
-                            <span style="font-weight:bold;">-</span>
-                            <input type="number" name="golesVisitante" th:value="${p.golesVisitante}" min="0" placeholder="V" required class="input-gol" />
-                            <button type="submit" class="btn btn-success"							
-							style="padding:5px 9px;font-size:10px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;"
-							
-							>&#10004; Editar</button>							
-                        </form>                        
-                    </td>
-					<td>
-					    <form th:action="@{/admin/partidos/resultado/eliminar}" method="post" style="display:flex;gap:5px;align-items:center;">
-					        <input type="hidden" name="partidoId" th:value="${p.id}" />					        
-					        <button type="submit" class="btn btn-warning" style="padding:5px 9px;font-size:10px;">&#9888; Eliminar marcador</button>							
-					    </form>					    
-					</td>
-                    <td th:text="${p.equipoVisitante != null ? p.equipoVisitante : '-'}"></td>
-                    <td th:text="${p.fechaPartido != null ? #temporals.format(p.fechaPartido, 'dd/MM/yy HH:mm') : '-'}"></td>
-                    <td th:text="${p.fase != null ? p.fase.nombre : '—'}"></td>
-                    <td th:text="${p.grupo != null ? p.grupo : '-'}"></td>
-                    <td th:text="${p.estadio != null ? p.estadio : '-'}"></td>                 
-                </tr>
-            </tbody>
-        </table>
+		<div class="table-scroll">
+	        <table>
+	            <thead>
+	                <tr>
+	                    <th>ID</th>
+	                    <th>Local</th>
+	                    <th>Marcador Oficial</th>
+						<th></th>					
+	                    <th>Visitante</th>
+	                    <th>Fecha y Hora</th>
+	                    <th>Fase</th>
+	                    <th>Grupo</th>
+	                    <th>Estadio</th>
+	                </tr>
+	            </thead>
+	            <tbody>
+	                <tr th:each="p : ${partidos}">
+	                    <td th:text="${p.id}" style="font-family:monospace;color:#6c757d;"></td>
+	                    <td th:text="${p.equipoLocal != null ? p.equipoLocal : '-'}"></td>
+	                    <td>
+	                        <form th:action="@{/admin/partidos/resultado}" method="post" style="display:flex;gap:5px;align-items:center;">
+	                            <input type="hidden" name="partidoId" th:value="${p.id}" />
+	                            <input type="number" name="golesLocal" th:value="${p.golesLocal}"  min="0" placeholder="L" required class="input-gol" />
+	                            <span style="font-weight:bold;">-</span>
+	                            <input type="number" name="golesVisitante" th:value="${p.golesVisitante}" min="0" placeholder="V" required class="input-gol" />
+	                            <button type="submit" class="btn btn-success"							
+								style="padding:5px 9px;font-size:10px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;"
+								
+								>&#10004; Editar</button>							
+	                        </form>                        
+	                    </td>
+						<td>
+						    <form th:action="@{/admin/partidos/resultado/eliminar}" method="post" style="display:flex;gap:5px;align-items:center;">
+						        <input type="hidden" name="partidoId" th:value="${p.id}" />					        
+						        <button type="submit" class="btn btn-warning" style="padding:5px 9px;font-size:10px;">&#9888; Eliminar marcador</button>							
+						    </form>					    
+						</td>
+	                    <td th:text="${p.equipoVisitante != null ? p.equipoVisitante : '-'}"></td>
+	                    <td th:text="${p.fechaPartido != null ? #temporals.format(p.fechaPartido, 'dd/MM/yy HH:mm') : '-'}"></td>
+	                    <td th:text="${p.fase != null ? p.fase.nombre : '—'}"></td>
+	                    <td th:text="${p.grupo != null ? p.grupo : '-'}"></td>
+	                    <td th:text="${p.estadio != null ? p.estadio : '-'}"></td>                 
+	                </tr>
+	            </tbody>
+	        </table>
+		</div>
     </div>
 
     <!-- ── MODAL CONFIRMACIÓN ELIMINAR PARTIDO ── -->
