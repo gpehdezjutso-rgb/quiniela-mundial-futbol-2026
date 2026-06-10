@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.quiniela.dao.PrediccionDao;
 import com.quiniela.pojo.Prediccion;
-
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
