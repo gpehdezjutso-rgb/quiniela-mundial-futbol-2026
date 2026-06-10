@@ -31,12 +31,23 @@
         .edit-form-card h4 { margin: 0 0 16px; color: #856404; font-size: 0.95rem; }
         .edit-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; align-items: end; }
 
-        /* ── TABLA ── */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
-        th, td { padding: 7px 10px; border-bottom: 1px solid #dee2e6; text-align: left; vertical-align: middle; }
-        th { background-color: #343a40; color: white; font-weight: 600; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; }
-        tr:hover { background-color: #f1f3f5; }
-        .badge-rol {
+		/* ── TABLA ── */
+		.table-scroll {
+		    max-height: 360px;
+		    overflow-y: auto;
+		    border: 1px solid #dee2e6;
+		    border-radius: 6px;
+		    margin-top: 10px;
+		}
+		.table-scroll table { margin-top: 0; }
+		table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+		th, td { padding: 7px 10px; border-bottom: 1px solid #dee2e6; text-align: left; vertical-align: middle; }
+		th {
+		    background-color: #343a40; color: white; font-weight: 600;
+		    text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px;
+		    position: sticky; top: 0; z-index: 1;
+		}
+		tr:hover { background-color: #f1f3f5; } .badge-rol {
             display: inline-block; padding: 3px 8px; border-radius: 4px;
             font-size: 0.75rem; font-weight: bold; font-family: monospace;
         }
@@ -118,40 +129,42 @@
 
         <!-- Tabla de usuarios -->
         <h3>&#128203; Padr&#243;n de Jugadores Inscritos</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width:60px;">ID</th>
-                    <th>Nombre</th>
-                    <th>Correo Electr&#243;nico</th>
-                    <th style="text-align:center;">Rol</th>
-                    <th style="text-align:center;">Puntos</th>
-                    <th style="text-align:center;width:170px;">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="u : ${usuarios}">
-                    <td style="font-family:monospace;color:#6c757d;" th:text="${u.id}"></td>
-                    <td style="font-weight:600;" th:text="${u.nombre}"></td>
-                    <td th:text="${u.correoElectronico}"></td>
-                    <td style="text-align:center;">
-                        <span th:text="${u.rol}"
-                              th:classappend="${u.rol == 'ADMIN'} ? 'badge-rol badge-admin' : 'badge-rol badge-user'"></span>
-                    </td>
-                    <td style="text-align:center;font-weight:bold;color:#0066cc;" th:text="${u.puntosTotales}">0</td>
-                    <td style="text-align:center;">
-                        <div style="display:inline-flex;gap:6px;">
-                            <a th:href="@{/admin/usuarios(editarId=${u.id})}" class="btn btn-warning" style="padding:5px 9px;font-size:0.78rem;">Editar</a>
-                            <button type="button" class="btn btn-danger btn-eliminar-usuario" style="padding:5px 9px;font-size:0.78rem;"
-                                    th:data-id="${u.id}"
-                                    th:data-nombre="${u.nombre}">
-                                Eliminar
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+		<div class="table-scroll">
+	        <table>
+	            <thead>
+	                <tr>
+	                    <th style="width:60px;">ID</th>
+	                    <th>Nombre</th>
+	                    <th>Correo Electr&#243;nico</th>
+	                    <th style="text-align:center;">Rol</th>
+	                    <th style="text-align:center;">Puntos</th>
+	                    <th style="text-align:center;width:170px;">Acciones</th>
+	                </tr>
+	            </thead>
+	            <tbody>
+	                <tr th:each="u : ${usuarios}">
+	                    <td style="font-family:monospace;color:#6c757d;" th:text="${u.id}"></td>
+	                    <td style="font-weight:600;" th:text="${u.nombre}"></td>
+	                    <td th:text="${u.correoElectronico}"></td>
+	                    <td style="text-align:center;">
+	                        <span th:text="${u.rol}"
+	                              th:classappend="${u.rol == 'ADMIN'} ? 'badge-rol badge-admin' : 'badge-rol badge-user'"></span>
+	                    </td>
+	                    <td style="text-align:center;font-weight:bold;color:#0066cc;" th:text="${u.puntosTotales}">0</td>
+	                    <td style="text-align:center;">
+	                        <div style="display:inline-flex;gap:6px;">
+	                            <a th:href="@{/admin/usuarios(editarId=${u.id})}" class="btn btn-warning" style="padding:5px 9px;font-size:0.78rem;">Editar</a>
+	                            <button type="button" class="btn btn-danger btn-eliminar-usuario" style="padding:5px 9px;font-size:0.78rem;"
+	                                    th:data-id="${u.id}"
+	                                    th:data-nombre="${u.nombre}">
+	                                Eliminar
+	                            </button>
+	                        </div>
+	                    </td>
+	                </tr>
+	            </tbody>
+	        </table>
+		</div>
     </div>
 
     <!-- ── MODAL CONFIRMACIÓN ELIMINAR USUARIO ── -->
