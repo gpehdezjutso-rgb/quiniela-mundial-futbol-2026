@@ -80,7 +80,19 @@
             padding: 4px 9px; border-radius: 4px; font-size: 0.8rem;
         }
         .pts-label { font-size: 0.68rem; font-weight: normal; opacity: 0.8; }
-
+		.table-scroll {
+		    max-height: 360px;
+		    overflow-y: auto;
+		    border: 1px solid #dee2e6;
+		    border-radius: 6px;
+		    margin-top: 10px;
+		}
+		.table-scroll table { margin-top: 0; }
+		.table-scroll th {
+		    position: sticky;
+		    top: 0;
+		    z-index: 1;
+		}
         /* ── FORMULARIO APUESTA ── */
         .text-muted { color: #999; font-style: italic; font-size: 0.82rem; }
         .form-inline { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
@@ -197,7 +209,7 @@
             Tienes <strong th:text="${usuarioActual.puntosTotales}">0</strong> puntos acumulados.
         </div>
         <h3 class="panel-title">&#128197; Registra tus Pron&#243;sticos</h3>
-        <div class="table-scroll">
+        <div class="table-scroll" style="max-height:420px;">
         <table class="match-table">
             <thead>
                 <tr>
@@ -303,33 +315,35 @@
         <!-- Ranking de jugadores -->
         <div class="panel">
             <h3 class="panel-title">&#127942; Ranking de Jugadores</h3>
-            <table class="side-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Jugador</th>
-                        <th style="background:#4c2988;">Pts</th>
-                    </tr>
-                </thead>
-                <tbody th:if="${resultadosJugadores == null or #lists.isEmpty(resultadosJugadores)}">
-                    <tr><td colspan="3" class="empty-msg">&#128101; Sin jugadores registrados.</td></tr>
-                </tbody>
-                <tbody th:if="${resultadosJugadores != null and not #lists.isEmpty(resultadosJugadores)}">
-                    <tr th:each="jugador, iter : ${resultadosJugadores}"
-                        th:classappend="${jugador.id == usuarioActual.id} ? 'yo-row' : ''">
-                        <td style="color:#999;font-weight:bold;" th:text="${iter.count}"></td>
-                        <td th:text="${jugador.nombre}"
-                            th:classappend="${jugador.id == usuarioActual.id} ? 'yo-nombre' : ''"></td>
-                        <td style="font-weight:bold;color:#4c2988;" th:text="${jugador.puntosTotales}"></td>
-                    </tr>
-                </tbody>
-            </table>
+			<div class="table-scroll" style="max-height:280px;">
+	            <table class="side-table">
+	                <thead>
+	                    <tr>
+	                        <th>#</th>
+	                        <th>Jugador</th>
+	                        <th style="background:#4c2988;">Pts</th>
+	                    </tr>
+	                </thead>
+	                <tbody th:if="${resultadosJugadores == null or #lists.isEmpty(resultadosJugadores)}">
+	                    <tr><td colspan="3" class="empty-msg">&#128101; Sin jugadores registrados.</td></tr>
+	                </tbody>
+	                <tbody th:if="${resultadosJugadores != null and not #lists.isEmpty(resultadosJugadores)}">
+	                    <tr th:each="jugador, iter : ${resultadosJugadores}"
+	                        th:classappend="${jugador.id == usuarioActual.id} ? 'yo-row' : ''">
+	                        <td style="color:#999;font-weight:bold;" th:text="${iter.count}"></td>
+	                        <td th:text="${jugador.nombre}"
+	                            th:classappend="${jugador.id == usuarioActual.id} ? 'yo-nombre' : ''"></td>
+	                        <td style="font-weight:bold;color:#4c2988;" th:text="${jugador.puntosTotales}"></td>
+	                    </tr>
+	                </tbody>
+	            </table>
+			</div>
         </div>
 
         <!-- Tabla del Mundial -->
         <div class="panel">
             <h3 class="panel-title">&#127758; Tabla del Mundial 2026</h3>
-            <div class="table-scroll">
+            <div class="table-scroll" style="max-height:250px;">
             <table class="side-table">
                 <thead>
                     <tr>
