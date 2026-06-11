@@ -43,6 +43,15 @@ public class PartidoServiceImpl implements PartidoService {
     public List<Partido> obtenerPorFase(Long faseId) {
         return partidoDao.obtenerPorFase(faseId);
     }
+    
+    @Override
+    public List<Partido> obtenerPartidosPorFasesActivas(List<Long>  faseId) {
+    	   if (faseId == null || faseId.isEmpty()) {
+    	        return new ArrayList<>();
+    	    }
+    	
+        return partidoDao.obtenerPartidosPorFasesActivas(faseId);
+    }
 
     @Override
     public void actualizarResultado(Long id, Integer golesLocal, Integer golesVisitante) {
