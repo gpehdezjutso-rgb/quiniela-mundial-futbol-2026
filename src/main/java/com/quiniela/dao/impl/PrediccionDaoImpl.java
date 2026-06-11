@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.quiniela.dao.PrediccionDao;
 import com.quiniela.pojo.Prediccion;
+
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -19,8 +20,14 @@ public class PrediccionDaoImpl implements PrediccionDao {
     private SessionFactory sessionFactory;
 
     @Override
-    public void guardar(Prediccion prediccion) {     
-        prediccion.setFechaRegistro(LocalDateTime.now(ZoneId.of("America/Mexico_City")));
+    public void guardar(Prediccion prediccion) {    	
+    	
+    	if ( prediccion.getFechaRegistro() != null ) {    		
+    		prediccion.setFechaModificacion(LocalDateTime.now(ZoneId.of("America/Mexico_City")));    		
+    	} else {    		
+    		prediccion.setFechaRegistro(LocalDateTime.now(ZoneId.of("America/Mexico_City")));    		
+    	}    	
+    	
         sessionFactory.getCurrentSession().saveOrUpdate(prediccion);
         sessionFactory.getCurrentSession().flush(); 
     }
@@ -49,5 +56,11 @@ public class PrediccionDaoImpl implements PrediccionDao {
         return sessionFactory.getCurrentSession()
                 .createQuery("FROM Prediccion", Prediccion.class)
                 .getResultList();
+    }
+   
+    
+    @Override
+    public void actualizar(Prediccion prediccion) {
+        sessionFactory.getCurrentSession().update(prediccion);
     }
 }
