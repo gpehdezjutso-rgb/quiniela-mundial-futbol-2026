@@ -1,5 +1,6 @@
 package com.quiniela.controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,14 +41,21 @@ public class AdminPartidoController {
             Model model) {
 
         Partido partidoForm = new Partido();
-
-        if (faseId == null) {
-            Fase faseActiva = catalogosService.obtenerFaseActiva();
-            if (faseActiva != null) {
-                faseId = faseActiva.getId();
+        List<Fase> fasesActivas = new ArrayList<>();
+        List<Long> fases = new ArrayList<>();
+        List<Partido> partidos = new ArrayList<>();
+        
+        if (faseId != null) {
+            partidos = partidoService.obtenerPorFase(faseId);
+        } else {
+        	fasesActivas = catalogosService.obtenerFasesActivas();
+        	for ( int i = 0; i < fasesActivas.size(); i++ ) {        
+            	fases.add(fasesActivas.get(i).getId());
             }
+            
+            partidos = partidoService.obtenerPartidosPorFasesActivas(fases);
         }
-
+        
         if (editarId != null) {
             Partido partidoExistente = partidoService.obtenerPartidoPorId(editarId);
             if (partidoExistente != null) {
@@ -59,7 +67,7 @@ public class AdminPartidoController {
         }
 
         model.addAttribute("partido", partidoForm);
-        model.addAttribute("partidos", partidoService.obtenerPorFase(faseId));
+        model.addAttribute("partidos", partidos);
         model.addAttribute("estadios", catalogosService.obtenerEstadiosActivos());
         model.addAttribute("paises", catalogosService.obtenerActivosPais());
         model.addAttribute("fases", catalogosService.listarFases());
