@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import com.quiniela.dao.PrediccionDao;
 import com.quiniela.dao.UsuarioDao;
 import com.quiniela.pojo.Partido;
 import com.quiniela.pojo.Prediccion;
@@ -23,6 +23,9 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Autowired
     private UsuarioDao usuarioDao;
+
+    @Autowired
+    private PrediccionDao prediccionDao;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -113,6 +116,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             if (jugador != null) {
                 jugador.setPuntosTotales(jugador.getPuntosTotales() + puntosObtenidos);
                 usuarioDao.actualizar(jugador);
+                prediccionDao.actualizar(p);
             }
         }
 
