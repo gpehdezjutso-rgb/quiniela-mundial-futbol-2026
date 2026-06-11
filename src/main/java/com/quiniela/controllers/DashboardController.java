@@ -1,5 +1,7 @@
 package com.quiniela.controllers;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,11 +15,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.quiniela.pojo.EstadisticaEquipo;
+import com.quiniela.pojo.Fase;
 import com.quiniela.pojo.PartidoDTO;
 import com.quiniela.pojo.Partido;
 import com.quiniela.pojo.Prediccion;
 import com.quiniela.pojo.ResultadoApuesta;
 import com.quiniela.pojo.Usuario;
+import com.quiniela.service.CatalogosService;
 import com.quiniela.service.PartidoService;
 import com.quiniela.service.PrediccionService;
 import com.quiniela.service.UsuarioService;
@@ -33,23 +37,39 @@ public class DashboardController {
 
     @Autowired
     private PrediccionService prediccionService;
+    
+    @Autowired
+    private CatalogosService catalogosService;
 
     @Autowired
     private UsuarioService usuarioService;
 
-    @GetMapping("/dashboard")
+    @SuppressWarnings("null")
+	@GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
+	    	
         Usuario usuarioActual = (Usuario) session.getAttribute("usuarioLogueado");
         if (usuarioActual == null) {
             return "redirect:/?errorSesion=true";
         }
-
-        List<Partido> partidos = partidoService.listarPartidos();
+        
+        List<Fase> fasesActivas = catalogosService.obtenerFasesActivas();
+        
+        List<Long> fases = new ArrayList<>();
+        
+        for ( int i = 0; i < fasesActivas.size(); i++ ) {        
+        	fases.add(fasesActivas.get(i).getId());
+        }
+        
+        List<Partido> partidos = partidoService.obtenerPartidosPorFasesActivas(fases);
+                
+        //List<Partido> partidos = partidoService.listarPartidos();
         if (partidos == null) partidos = new ArrayList<>();
-
+        
         List<Prediccion> apuestas = prediccionService.listarApuestasUsuario(usuarioActual.getId());
+        
         if (apuestas == null) apuestas = new ArrayList<>();
-
+        
         List<PartidoDTO> partidosConApuesta = new ArrayList<>();
         for (Partido p : partidos) {
             Prediccion apuestaEncontrada = apuestas.stream()
@@ -88,9 +108,18 @@ public class DashboardController {
         if (usuarioActual == null) {
             return "redirect:/?errorSesion=true";
         }
+        
+        Partido partido = partidoService.obtenerPartidoPorId(partidoId);
+        
+        LocalDateTime limiteApuesta = partido.getFechaPartido().minusHours(1);
+        if (LocalDateTime.now(ZoneId.of("America/Mexico_City")).isAfter(limiteApuesta)) {
+            return "redirect:/dashboard?errorApuesta=expirado";
+        }
 
         ResultadoApuesta resultado = prediccionService.guardarApuesta(
                 usuarioActual.getId(), partidoId, golesLocalPrediccion, golesVisitantePrediccion);
+        
+        
 
         switch (resultado) {
             case EXITO:               return "redirect:/dashboard?apuestaOk=true";
