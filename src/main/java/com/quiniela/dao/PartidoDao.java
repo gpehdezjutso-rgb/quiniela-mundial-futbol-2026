@@ -11,4 +11,5 @@ public interface PartidoDao {
     void actualizar(Partido partido);
     void eliminar(Long id);
     List<Partido> obtenerPorFase(Long faseId);
+	List<Partido> obtenerPartidosPorFasesActivas(List<Long> faseId);
 }
