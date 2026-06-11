@@ -9,4 +9,5 @@ public interface PrediccionDao {
     List<Prediccion> buscarPorUsuario(Long usuarioId);
     Prediccion buscarPorUsuarioYPartido(Long usuarioId, Long partidoId);
     List<Prediccion> obtenerTodas();
+    void actualizar(Prediccion prediccion);
 }
