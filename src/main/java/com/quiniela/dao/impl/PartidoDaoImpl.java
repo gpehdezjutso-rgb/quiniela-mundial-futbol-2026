@@ -58,12 +58,26 @@ public class PartidoDaoImpl implements PartidoDao {
     public List<Partido> obtenerPorFase(Long faseId) {
         String hql = "FROM Partido p " +
                      "LEFT JOIN FETCH p.fase " +
-                     "WHERE p.fase.id = :faseId " +
+                     "WHERE p.fase.id = :faseId " +                     
                      "ORDER BY p.fechaPartido";
 
         return sessionFactory.getCurrentSession()
                 .createQuery(hql, Partido.class)
                 .setParameter("faseId", faseId)
                 .list();
+    }
+    
+    @Override
+    public List<Partido> obtenerPartidosPorFasesActivas(List<Long>  faseId) {
+        String hql = "SELECT DISTINCT p FROM Partido p " +
+                "LEFT JOIN FETCH p.fase " +
+                "WHERE p.fase.id IN (:ids) " +
+                "ORDER BY p.fechaPartido";
+
+        return sessionFactory.getCurrentSession()
+           .createQuery(hql, Partido.class)
+           .setParameter("ids", faseId)
+           .list();
+    
     }
 }
