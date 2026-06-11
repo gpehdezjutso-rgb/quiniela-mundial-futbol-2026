@@ -15,11 +15,7 @@ public interface PartidoService {
     List<EstadisticaEquipo> obtenerTablaGeneralMundial();
     List<Partido> obtenerPorFase(Long faseId);
     void eliminarResultado(Long id);
-	/**
-	 * MEJORA: Lee primero de la tabla persistida en BD (calculada por el admin).
-	 * Solo recalcula si la tabla está vacía (primer arranque o reset manual).
-	 * Esto elimina el recálculo + escritura masiva en cada carga del dashboard.
-	 */
 	List<EstadisticaEquipo> generarTablaGeneralMundial();
-    void vaciarTabla();
+    void vaciarTabla();	
+	List<Partido> obtenerPartidosPorFasesActivas(List<Long> faseId);
 }
