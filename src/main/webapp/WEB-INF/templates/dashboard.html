@@ -245,6 +245,10 @@
                             <div th:if="${dto.prediccion != null}" style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
                                 <span class="badge-apuesta"
                                       th:text="${dto.prediccion.golesLocalPrediccion + ' - ' + dto.prediccion.golesVisitantePrediccion}"></span>
+								<!-- 4 pts: marcador exacto -->
+								<span th:if="${dto.prediccion.puntosGanados == 4}" class="badge-exacto">
+								     &#127919; <span>+4 pts</span>
+								</span>									  
                                 <!-- 3 pts: marcador exacto -->
                                 <span th:if="${dto.prediccion.puntosGanados == 3}" class="badge-exacto">
                                     &#127919; <span>+3 pts</span>
@@ -264,40 +268,45 @@
                             </div>
                             <span th:if="${dto.prediccion == null}" class="text-muted">Sin apuesta</span>
                         </div>
+						
+						<!-- ② PARTIDO EN CURSO / EXPIRADO -->
+						<div th:if="${dto.partido.golesLocal == null and dto.partido.fechaPartido != null}">
 
-                        <!-- ② PARTIDO EN CURSO / EXPIRADO -->
-                        <div th:if="${dto.partido.golesLocal == null and dto.partido.fechaPartido != null}">
-                            <div th:if="${#temporals.createNow().isAfter(dto.partido.fechaPartido)}">
-                                <span th:if="${dto.prediccion != null}" class="badge-apuesta"
-                                      th:text="${dto.prediccion.golesLocalPrediccion + ' - ' + dto.prediccion.golesVisitantePrediccion}"></span>
-                                <span class="badge-vivo">&#9203; En juego</span>
-                            </div>
+						    <!-- CERRADO O EN JUEGO -->
+							<div th:if="${dto.limiteApuesta != null and ahora.isAfter(dto.limiteApuesta)}">
+							    <span th:if="${dto.prediccion != null}" class="badge-apuesta"
+							          th:text="${dto.prediccion.golesLocalPrediccion + ' - ' + dto.prediccion.golesVisitantePrediccion}"></span>
+							    <span th:if="${ahora.isAfter(dto.partido.fechaPartido)}"
+							          class="badge-vivo">⏱ En juego</span>
+							    <span th:if="${ahora.isBefore(dto.partido.fechaPartido)}"
+							          class="badge-vivo" style="background:#6c757d;">🔒 Apuestas cerradas</span>
+							    <span th:if="${dto.prediccion == null}" class="text-muted">Sin apuesta</span>
+							</div>
 
-                            <!-- ③ DISPONIBLE PARA APOSTAR -->
-                            <div th:if="${#temporals.createNow().isBefore(dto.partido.fechaPartido)}">
-                                <!-- Ya tiene apuesta y NO está en modo edición -->
-                                <div th:if="${dto.prediccion != null and (param.cambiarPartidoId == null or param.cambiarPartidoId[0] != #strings.toString(dto.partido.id))}"
-                                     class="form-inline">
-                                    <span class="badge-apuesta"
-                                          th:text="${dto.prediccion.golesLocalPrediccion + ' - ' + dto.prediccion.golesVisitantePrediccion}"></span>
-                                    <a class="btn-edit" th:href="@{/dashboard(cambiarPartidoId=${dto.partido.id})}">Modificar</a>
-                                </div>
-                                <!-- Sin apuesta o modo edición activo -->
-                                <div th:if="${dto.prediccion == null or (param.cambiarPartidoId != null and param.cambiarPartidoId[0] == #strings.toString(dto.partido.id))}">
-                                    <form th:action="@{/dashboard/apuesta}" method="post" class="form-inline">
-                                        <input type="hidden" name="partidoId" th:value="${dto.partido.id}" />
-                                        <input type="number" name="golesLocalPrediccion" min="0" class="input-score"
-                                               th:value="${dto.prediccion != null ? dto.prediccion.golesLocalPrediccion : ''}"
-                                               placeholder="L" required />
-                                        <span style="color:#999;">-</span>
-                                        <input type="number" name="golesVisitantePrediccion" min="0" class="input-score"
-                                               th:value="${dto.prediccion != null ? dto.prediccion.golesVisitantePrediccion : ''}"
-                                               placeholder="V" required />
-                                        <button type="submit" class="btn-save">Guardar</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
+							<!-- DISPONIBLE PARA APOSTAR -->
+							<div th:if="${dto.limiteApuesta != null and ahora.isBefore(dto.limiteApuesta)}">
+						        <div th:if="${dto.prediccion != null and (param.cambiarPartidoId == null or param.cambiarPartidoId[0] != #strings.toString(dto.partido.id))}"
+						             class="form-inline">
+						            <span class="badge-apuesta"
+						                  th:text="${dto.prediccion.golesLocalPrediccion + ' - ' + dto.prediccion.golesVisitantePrediccion}"></span>
+						            <a class="btn-edit" th:href="@{/dashboard(cambiarPartidoId=${dto.partido.id})}">Modificar</a>
+						        </div>
+						        <div th:if="${dto.prediccion == null or (param.cambiarPartidoId != null and param.cambiarPartidoId[0] == #strings.toString(dto.partido.id))}">
+						            <form th:action="@{/dashboard/apuesta}" method="post" class="form-inline">
+						                <input type="hidden" name="partidoId" th:value="${dto.partido.id}" />
+						                <input type="number" name="golesLocalPrediccion" min="0" class="input-score"
+						                       th:value="${dto.prediccion != null ? dto.prediccion.golesLocalPrediccion : ''}"
+						                       placeholder="L" required />
+						                <span style="color:#999;">-</span>
+						                <input type="number" name="golesVisitantePrediccion" min="0" class="input-score"
+						                       th:value="${dto.prediccion != null ? dto.prediccion.golesVisitantePrediccion : ''}"
+						                       placeholder="V" required />
+						                <button type="submit" class="btn-save">Guardar</button>
+						            </form>
+						        </div>
+						    </div>
+
+						</div>
 
                         <!-- ④ FECHA NO ASIGNADA -->
                         <div th:if="${dto.partido.golesLocal == null and dto.partido.fechaPartido == null}">
