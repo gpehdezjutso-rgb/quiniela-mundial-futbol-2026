@@ -1,11 +1,13 @@
 package com.quiniela.controllers;
 
 import java.time.ZoneId;
+import java.io.IOException;
 import java.time.LocalDateTime;
-
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,7 @@ import com.quiniela.service.CatalogosService;
 import com.quiniela.service.PartidoService;
 import com.quiniela.service.PrediccionService;
 import com.quiniela.service.UsuarioService;
+import com.quiniela.util.ExcelExporter;
 
 /**
  * Dashboard del usuario: listado de partidos, apuestas y tabla de posiciones.
@@ -49,11 +52,15 @@ public class DashboardController {
     @SuppressWarnings("null")
 	@GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
-	    	
+        
         Usuario usuarioActual = (Usuario) session.getAttribute("usuarioLogueado");
         if (usuarioActual == null) {
             return "redirect:/?errorSesion=true";
         }
+        
+     // Refrescar desde BD para evitar valores obsoletos de la sesión
+        usuarioActual = usuarioService.obtenerUsuarioPorId(usuarioActual.getId());
+        session.setAttribute("usuarioLogueado", usuarioActual);
         
         List<Fase> fasesActivas = catalogosService.obtenerFasesActivas();
         
@@ -134,5 +141,47 @@ public class DashboardController {
             case PARTIDO_EXPIRADO:    return "redirect:/dashboard?errorApuesta=expirado";
             default:                  return "redirect:/dashboard?errorApuesta=invalido";
         }
+    }
+    
+    @GetMapping("/dashboard/resultadosjugadores/exportar")
+    public void exportarExcel(HttpServletResponse response)
+            throws IOException { 	
+    	
+    	LocalDateTime now = LocalDateTime.now(ZoneId.of("America/Mexico_City"));
+    	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+
+    	String formatted = now.format(formatter);
+    	String nombreArchivo = "Ranking jugadores " + formatted; 
+
+        response.setContentType(
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+        response.setHeader(
+            "Content-Disposition",
+            "attachment; filename=" + nombreArchivo + ".xlsx");
+
+        ExcelExporter exporter =
+                new ExcelExporter(nombreArchivo);
+
+        String[] headers = {
+            "#",
+            "Jugador",
+            "Puntos"
+        };
+
+        exporter.writeHeader(headers);
+        
+        List<String[]> data = usuarioService.obtenerTablaPosiciones()
+            .stream()
+            .map(p -> new String[] {
+                    String.valueOf(p.getId()),
+                    p.getNombre().toString(),                    
+                    p.getPuntosTotales().toString()
+            })
+            .toList();
+
+        exporter.writeData(data);
+
+        exporter.export(response);
     }
 }
