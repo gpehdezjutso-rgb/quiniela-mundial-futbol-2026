@@ -86,13 +86,9 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public void procesarPuntosGlobales(List<Prediccion> todasLasPredicciones) {
+      public void procesarPuntosGlobales(List<Prediccion> todasLasPredicciones) {
         List<Usuario> todosLosUsuarios = usuarioDao.obtenerTodos();
-        // Resetear puntos
-        for (Usuario u : todosLosUsuarios) {
-            u.setPuntosTotales(0);
-        }
-
+        
         for (Prediccion p : todasLasPredicciones) {
             Partido partido = p.getPartido();
             if (partido.getGolesLocal() == null || partido.getGolesVisitante() == null) continue;
@@ -101,7 +97,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             int realV = partido.getGolesVisitante();
             int predL = p.getGolesLocalPrediccion();
             int predV = p.getGolesVisitantePrediccion();
-
+            
             int puntosObtenidos = 0;
             if (realL == predL && realV == predV) {
                 puntosObtenidos = 3;
@@ -112,14 +108,22 @@ public class UsuarioServiceImpl implements UsuarioService {
             }
 
             p.setPuntosGanados(puntosObtenidos);
+           
             Usuario jugador = p.getUsuario();
             if (jugador != null) {
-                jugador.setPuntosTotales(jugador.getPuntosTotales() + puntosObtenidos);
-                usuarioDao.actualizar(jugador);
+                jugador.setPuntosTotales(puntosObtenidos);                
                 prediccionDao.actualizar(p);
             }
         }
-
+        
+     // Resetear puntos
+        for (Usuario u : todosLosUsuarios) {
+            u.setPuntosTotales(0);
+            int totalPuntos = prediccionDao.sumarPuntosPorUsuario(u.getId());
+            u.setPuntosTotales(totalPuntos);           	
+            usuarioDao.actualizar(u);            	
+        }        
+                
         log.info("Puntos globales calculados para {} predicciones", todasLasPredicciones.size());
     }
 
