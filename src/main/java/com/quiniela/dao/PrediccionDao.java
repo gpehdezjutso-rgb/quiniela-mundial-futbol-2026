@@ -10,4 +10,5 @@ public interface PrediccionDao {
     Prediccion buscarPorUsuarioYPartido(Long usuarioId, Long partidoId);
     List<Prediccion> obtenerTodas();
     void actualizar(Prediccion prediccion);
+    int sumarPuntosPorUsuario(Long usuarioId);
 }
