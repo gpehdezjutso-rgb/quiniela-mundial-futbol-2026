@@ -208,7 +208,13 @@
             &#128075; &#161;Hola, <strong th:text="${usuarioActual.nombre}">Usuario</strong>!
             Tienes <strong th:text="${usuarioActual.puntosTotales}">0</strong> puntos acumulados.
         </div>
+		
         <h3 class="panel-title">&#128197; Registra tus Pron&#243;sticos</h3>
+		<a th:href="@{/dashboard/exportar-predicciones}"
+		       class="btn-edit"
+		       style="font-size:0.7rem; padding:4px 10px; text-decoration:none;">
+		        &#128190; Exportar a Excel
+		    </a>
         <div class="table-scroll" style="max-height:420px;">
         <table class="match-table">
             <thead>
@@ -323,7 +329,7 @@
     <div class="panel-side">
         <!-- Ranking de jugadores -->
         <div class="panel">
-            <h3 class="panel-title">&#127942; Ranking de Jugadores</h3> 					
+            <h3 class="panel-title">&#127942; Ranking de Jugadores</h3> 			
 			<a th:href="@{/dashboard/resultadosjugadores/exportar}"
 			   class="btn btn-success">
 			    Exportar Excel
