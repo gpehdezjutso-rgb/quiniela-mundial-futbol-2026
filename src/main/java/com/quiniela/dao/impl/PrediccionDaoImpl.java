@@ -63,4 +63,17 @@ public class PrediccionDaoImpl implements PrediccionDao {
     public void actualizar(Prediccion prediccion) {
         sessionFactory.getCurrentSession().update(prediccion);
     }
+
+    @Override
+    public int sumarPuntosPorUsuario(Long usuarioId) {
+        String hql = "SELECT SUM(p.puntosGanados) FROM Prediccion p " +
+                      "WHERE p.usuario.id = :usuarioId AND p.puntosGanados IS NOT NULL";
+
+        Long suma = (Long) sessionFactory.getCurrentSession()
+                .createQuery(hql)
+                .setParameter("usuarioId", usuarioId)
+                .uniqueResult();
+
+        return (suma != null) ? suma.intValue() : 0;
+    }
 }
