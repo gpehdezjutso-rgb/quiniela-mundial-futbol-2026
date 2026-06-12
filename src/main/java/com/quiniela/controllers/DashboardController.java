@@ -142,46 +142,6 @@ public class DashboardController {
             default:                  return "redirect:/dashboard?errorApuesta=invalido";
         }
     }
-    
-    @GetMapping("/dashboard/resultadosjugadores/exportar")
-    public void exportarExcel(HttpServletResponse response)
-            throws IOException { 	
-    	
-    	LocalDateTime now = LocalDateTime.now(ZoneId.of("America/Mexico_City"));
-    	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-
-    	String formatted = now.format(formatter);
-    	String nombreArchivo = "Ranking jugadores " + formatted; 
-
-        response.setContentType(
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-
-        response.setHeader(
-            "Content-Disposition",
-            "attachment; filename=" + nombreArchivo + ".xlsx");
-
-        ExcelExporter exporter =
-                new ExcelExporter(nombreArchivo);
-
-        String[] headers = {
-            "#",
-            "Jugador",
-            "Puntos"
-        };
-
-        exporter.writeHeader(headers);
-        
-        List<String[]> data = usuarioService.obtenerTablaPosiciones()
-            .stream()
-            .map(p -> new String[] {
-                    String.valueOf(p.getId()),
-                    p.getNombre().toString(),                    
-                    p.getPuntosTotales().toString()
-            })
-            .toList();
-
-        exporter.writeData(data);
-
-        exporter.export(response);
-    }
+   
+ 
 }
