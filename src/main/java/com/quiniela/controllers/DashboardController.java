@@ -31,6 +31,11 @@ import com.quiniela.service.PrediccionService;
 import com.quiniela.service.UsuarioService;
 import com.quiniela.util.ExcelExporter;
 
+import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
+import com.quiniela.util.ExcelExporter;
+
 /**
  * Dashboard del usuario: listado de partidos, apuestas y tabla de posiciones.
  */
@@ -142,8 +147,8 @@ public class DashboardController {
             default:                  return "redirect:/dashboard?errorApuesta=invalido";
         }
     }
-
-	 @GetMapping("/dashboard/resultadosjugadores/exportar")
+    
+    @GetMapping("/dashboard/resultadosjugadores/exportar")
     public void exportarExcel(HttpServletResponse response)
             throws IOException { 	
     	
@@ -183,6 +188,67 @@ public class DashboardController {
 
         exporter.export(response);
     }
-   
- 
+    
+    @GetMapping("/dashboard/exportar-predicciones")
+    public void exportarPredicciones(HttpSession session, HttpServletResponse response) throws java.io.IOException {
+
+        Usuario usuarioActual = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuarioActual == null) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+
+        // ── Reconstruir la misma data que usa el dashboard ──
+        List<Fase> fasesActivas = catalogosService.obtenerFasesActivas();
+        List<Long> fases = new ArrayList<>();
+        for (Fase f : fasesActivas) {
+            fases.add(f.getId());
+        }
+
+        List<Partido> partidos = partidoService.obtenerPartidosPorFasesActivas(fases);
+        if (partidos == null) partidos = new ArrayList<>();
+
+        List<Prediccion> apuestas = prediccionService.listarApuestasUsuario(usuarioActual.getId());
+        if (apuestas == null) apuestas = new ArrayList<>();
+
+        // ── Configurar respuesta HTTP ──
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=mis_predicciones.xlsx");
+
+        // ── Generar Excel ──
+        ExcelExporter exporter = new ExcelExporter("Mis Predicciones");
+
+        String[] headers = {"Fase", "Grupo", "Encuentro", "Resultado Real", "Mi Predicción", "Puntos"};
+        exporter.writeHeader(headers);
+
+        List<String[]> data = new ArrayList<>();
+        for (Partido p : partidos) {
+            Prediccion pred = apuestas.stream()
+                    .filter(a -> a.getPartido().getId().equals(p.getId()))
+                    .findFirst()
+                    .orElse(null);
+
+            String fase = (p.getFase() != null) ? p.getFase().getNombre() : "-";
+            String grupo = (p.getGrupo() != null) ? p.getGrupo() : "-";
+            String encuentro = p.getEquipoLocal() + " vs " + p.getEquipoVisitante();
+
+            String resultadoReal = (p.getGolesLocal() != null)
+                    ? p.getGolesLocal() + " - " + p.getGolesVisitante()
+                    : "Por jugar";
+
+            String miPrediccion = (pred != null)
+                    ? pred.getGolesLocalPrediccion() + " - " + pred.getGolesVisitantePrediccion()
+                    : "Sin apuesta";
+
+            String puntos = (pred != null && pred.getPuntosGanados() != null)
+                    ? String.valueOf(pred.getPuntosGanados())
+                    : "-";
+
+            data.add(new String[]{fase, grupo, encuentro, resultadoReal, miPrediccion, puntos});
+        }
+
+        exporter.writeData(data);
+        exporter.export(response);
+    }
+  
 }
