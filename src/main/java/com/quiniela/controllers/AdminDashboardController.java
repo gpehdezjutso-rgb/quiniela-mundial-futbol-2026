@@ -59,6 +59,7 @@ public class AdminDashboardController {
         model.addAttribute("partidosConResultado", partidosConResultado);
         model.addAttribute("partidosPendientes", partidosPendientes);
         model.addAttribute("totalPredicciones", todasPredicciones.size());
+        model.addAttribute("rankingEjecutivo", usuarioService.obtenerRankingEjecutivo());
 
         return "admin-dashboard";
     }
