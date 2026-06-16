@@ -14,4 +14,5 @@ public interface UsuarioService {
     void procesarPuntosGlobales(List<Prediccion> todasLasPredicciones);
     List<Usuario> listarTodosLosUsuarios();
     void eliminarUsuario(Long id);
+    List<RankingEjecutivo> obtenerRankingEjecutivo();
 }
