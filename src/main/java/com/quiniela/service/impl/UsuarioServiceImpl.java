@@ -15,6 +15,7 @@ import com.quiniela.pojo.Partido;
 import com.quiniela.pojo.Prediccion;
 import com.quiniela.pojo.Usuario;
 import com.quiniela.service.UsuarioService;
+import com.quiniela.pojo.RankingEjecutivo;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
@@ -135,5 +136,43 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public void eliminarUsuario(Long id) {
         usuarioDao.eliminar(id);
+    }
+
+      @Override
+    public List<RankingEjecutivo> obtenerRankingEjecutivo() {
+        List<Usuario> usuarios = usuarioDao.obtenerTodos();
+        List<Prediccion> todasPredicciones = prediccionDao.obtenerTodas();
+
+        if (usuarios == null) usuarios = new ArrayList<>();
+        if (todasPredicciones == null) todasPredicciones = new ArrayList<>();
+
+        List<RankingEjecutivo> resultado = new ArrayList<>();
+
+        for (Usuario u : usuarios) {
+            List<Prediccion> predsUsuario = todasPredicciones.stream()
+                    .filter(p -> p.getUsuario() != null && p.getUsuario().getId().equals(u.getId()))
+                    .collect(Collectors.toList());
+
+            int exactos = 0;
+            int parciales = 0;
+            int jugados = 0;
+            int pronosticados = predsUsuario.size();
+
+            for (Prediccion p : predsUsuario) {
+                Partido partido = p.getPartido();
+                if (partido != null && partido.getGolesLocal() != null) {
+                    jugados++;
+                    if (p.getPuntosGanados() == 3) exactos++;
+                    else if (p.getPuntosGanados() == 1) parciales++;
+                }
+            }
+
+            resultado.add(new RankingEjecutivo(
+                    u.getNombre(), u.getPuntosTotales(), exactos, parciales, pronosticados, jugados));
+        }
+
+        resultado.sort((a, b) -> Integer.compare(b.getPuntosTotales(), a.getPuntosTotales()));
+
+        return resultado;
     }
 }
