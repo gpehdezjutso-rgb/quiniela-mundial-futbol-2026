@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.quiniela.pojo.Prediccion;
 import com.quiniela.pojo.Usuario;
+import com.quiniela.pojo.RankingEjecutivo;
 
 public interface UsuarioService {
     boolean registrarUsuario(Usuario usuario); // Aplica validaciones de registro
