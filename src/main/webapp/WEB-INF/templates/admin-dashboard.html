@@ -99,6 +99,18 @@
         .btn-action.orange:hover { background-color: #e8680d; }
 		.btn-action.gray { background-color: #808080; }
 		.btn-action.gray:hover { background-color: #808080; }
+		.table-scroll {
+		    max-height: 200px;
+		    overflow-y: auto;
+		    border: 1px solid #dee2e6;
+		    border-radius: 6px;
+		}
+		.table-scroll table { margin-top: 0; }
+		.table-scroll th {
+		    position: sticky;
+		    top: 0;
+		    z-index: 1;
+		}
 
         /* ── RESPONSIVO ── */
         @media (max-width: 600px) {
@@ -162,6 +174,41 @@
                 <span class="metric-label">Pronósticos registrados</span>
             </div>
         </div>
+		
+		<!-- ── RANKING EJECUTIVO ── -->
+		<p class="section-title">Ranking de Jugadores</p>
+		<div class="card" style="margin-bottom:28px; padding:0; overflow:hidden;">
+		     <div class="table-scroll">
+		        <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+		            <thead>
+		                <tr style="background-color:#343a40; color:white;">
+		                    <th style="padding:10px 14px; text-align:center;">#</th>
+		                    <th style="padding:10px 14px; text-align:left;">Jugador</th>
+		                    <th style="padding:10px 14px; text-align:center;">Pts</th>
+		                    <th style="padding:10px 14px; text-align:center;">Exactos</th>
+		                    <th style="padding:10px 14px; text-align:center;">Parciales</th>
+		                    <th style="padding:10px 14px; text-align:center;">Pronosticados</th>
+		                    <th style="padding:10px 14px; text-align:center;">% Efectividad</th>
+		                </tr>
+		            </thead>
+		            <tbody th:if="${rankingEjecutivo == null or #lists.isEmpty(rankingEjecutivo)}">
+		                <tr><td colspan="7" style="text-align:center; padding:20px; color:#aaa; font-style:italic;">Sin datos disponibles.</td></tr>
+		            </tbody>
+		            <tbody th:if="${rankingEjecutivo != null and not #lists.isEmpty(rankingEjecutivo)}">
+		                <tr th:each="r, iter : ${rankingEjecutivo}" style="border-bottom:1px solid #f0f0f0;">
+		                    <td style="padding:9px 14px; text-align:center; color:#999; font-weight:bold;" th:text="${iter.count}"></td>
+		                    <td style="padding:9px 14px; font-weight:600;" th:text="${r.nombre}"></td>
+		                    <td style="padding:9px 14px; text-align:center; font-weight:bold; color:#0066cc;" th:text="${r.puntosTotales}"></td>
+		                    <td style="padding:9px 14px; text-align:center; color:#28a745; font-weight:600;" th:text="${r.exactos}"></td>
+		                    <td style="padding:9px 14px; text-align:center; color:#856404; font-weight:600;" th:text="${r.parciales}"></td>
+		                    <td style="padding:9px 14px; text-align:center;" th:text="${r.pronosticados}"></td>
+		                    <td style="padding:9px 14px; text-align:center;"
+		                        th:text="${#numbers.formatDecimal(r.efectividad, 1, 1) + '%'}"></td>
+		                </tr>
+		            </tbody>
+		        </table>
+		    </div>
+		</div>
 
         <!-- ── ACCIONES ── -->
         <p class="section-title">Herramientas de administración</p>
