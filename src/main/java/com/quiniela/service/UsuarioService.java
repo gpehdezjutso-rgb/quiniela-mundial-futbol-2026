@@ -3,8 +3,9 @@ package com.quiniela.service;
 import java.util.List;
 
 import com.quiniela.pojo.Prediccion;
-import com.quiniela.pojo.Usuario;
+import com.quiniela.pojo.PrediccionResumenDTO;
 import com.quiniela.pojo.RankingEjecutivo;
+import com.quiniela.pojo.Usuario;
 
 public interface UsuarioService {
     boolean registrarUsuario(Usuario usuario); // Aplica validaciones de registro
@@ -14,6 +15,7 @@ public interface UsuarioService {
     Usuario autenticar(String correo, String password); 
     void procesarPuntosGlobales(List<Prediccion> todasLasPredicciones);
     List<Usuario> listarTodosLosUsuarios();
-    void eliminarUsuario(Long id);
-    List<RankingEjecutivo> obtenerRankingEjecutivo();
+    void eliminarUsuario(Long id);	
+	List<RankingEjecutivo> obtenerRankingEjecutivoPorFase(Long faseId);
+	List<PrediccionResumenDTO> obtenerResumenPrediccionesPorFase(Long faseId);
 }
