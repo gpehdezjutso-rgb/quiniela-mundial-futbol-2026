@@ -440,15 +440,7 @@ input{
 
 				    </form>
 
-				</td>
-				<td>
-				    <form th:action="@{/admin/catalogos/fases/eliminar}"
-				          method="post"
-				          onsubmit="return confirm('¿Eliminar esta fase?')">
-				        <input type="hidden" name="id" th:value="${fase.id}" />
-				        <button type="submit" class="btn btn-danger">Eliminar</button>
-				    </form>
-				</td>
+				</td>				
 
             </tr>
 
