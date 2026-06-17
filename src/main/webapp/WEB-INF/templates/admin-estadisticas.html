@@ -87,6 +87,14 @@
         .chip-ninguno { color: #aaa; font-style: italic; font-size: 0.8rem; }
         .partido-footer { background: #f8f9fa; padding: 10px 20px; display: flex; gap: 20px; font-size: 0.8rem; color: #6c757d; border-top: 1px solid #f0f0f0; flex-wrap: wrap; }
         .footer-stat strong { color: #212529; }
+		.btn-export {
+		    display: inline-flex; align-items: center; gap: 6px;
+		    padding: 7px 14px; border-radius: 6px; font-size: 0.8rem;
+		    font-weight: 600; text-decoration: none; white-space: nowrap;
+		    background-color: #28a745; color: white; transition: opacity 0.15s;
+		}
+		.btn-export:hover { opacity: 0.85; }
+		.btn-export.disabled { background-color: #adb5bd; pointer-events: none; }
 
         /* ── RESPONSIVO ── */
         @media (max-width: 700px) {
@@ -151,10 +159,22 @@
                 onclick="cambiarTab('predicciones')">
             &#127919; Predicciones por Partido
         </button>
+		<button class="tab-btn" type="button"
+		           th:classappend="${tabActiva == 'rankjugadores'} ? ' active' : ''"
+		           onclick="cambiarTab('rankjugadores')">
+		       &#127919; Posiciones
+		   </button>
     </div>
 
     <!-- ══ PESTAÑA 1: RANKING ══ -->
     <div id="tab-ranking" th:style="${tabActiva != 'ranking'} ? 'display:none' : ''">
+		<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">		    
+		    <a th:href="@{/admin/estadisticas/exportar-ranking-excel(faseId=${faseSeleccionada})}"
+		       class="btn-export"
+		       th:classappend="${faseSeleccionada == null} ? ' disabled' : ''">
+		        &#128190; Exportar Excel
+		    </a>
+		</div>
         <p class="section-title">Posiciones</p>
         <div class="card">
             <div class="table-scroll">
@@ -201,9 +221,15 @@
     </div>
 
     <!-- ══ PESTAÑA 2: PREDICCIONES ══ -->
-    <div id="tab-predicciones" th:style="${tabActiva != 'predicciones'} ? 'display:none' : ''">
-        <p class="section-title">Distribución de apuestas por partido</p>
-
+    <div id="tab-predicciones" th:style="${tabActiva != 'predicciones'} ? 'display:none' : ''">        
+		<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+		    <p class="section-title" style="margin:0;">Distribución de apuestas por partido</p>
+		    <a th:href="@{/admin/estadisticas/exportar-predicciones-pdf(faseId=${faseSeleccionada})}"
+		       class="btn-export"
+		       th:classappend="${faseSeleccionada == null} ? ' disabled' : ''">
+		        &#128196; Exportar PDF
+		    </a>
+		</div>
         <div th:if="${resumen == null or #lists.isEmpty(resumen)}" class="empty-msg"
              style="background:white; border-radius:10px;">
             &#128202; Selecciona una fase para ver las predicciones.
@@ -280,6 +306,34 @@
             </div>
         </div>
     </div>
+	
+	<!-- ══ PESTAÑA 3: RANKING JUGADORES ══ -->
+	   <div id="tab-rankjugadores" th:style="${ tabActiva != 'rankjugadores'} ? 'display:none' : ''">	
+	       <p class="section-title">Posiciones</p>
+	       <div class="card">
+	           <div class="table-scroll">
+	             <table class="side-table">
+	                <thead>
+	                    <tr>
+	                        <th>#</th>
+	                        <th>Jugador</th>
+	                        <th style="background:#4c2988;">Pts</th>
+	                    </tr>
+	                </thead>
+	                <tbody th:if="${resultadosJugadores == null or #lists.isEmpty(resultadosJugadores)}">
+	                    <tr><td colspan="3" class="empty-msg">&#128101; Sin jugadores registrados.</td></tr>
+	                </tbody>
+	                <tbody th:if="${resultadosJugadores != null and not #lists.isEmpty(resultadosJugadores)}">
+	                    <tr th:each="jugador, iter : ${resultadosJugadores}" >
+	                        <td style="color:#999;font-weight:bold;" th:text="${iter.count}"></td>
+	                        <td th:text="${jugador.nombre}"></td>
+	                        <td style="font-weight:bold;color:#4c2988;" th:text="${jugador.puntosTotales}"></td>
+	                    </tr>
+	                </tbody>
+	            </table>
+	           </div>
+	       </div>
+	   </div>
 
 </div>
 
@@ -288,6 +342,7 @@ function cambiarTab(tab) {
     // Ocultar todas las pestañas
     document.getElementById('tab-ranking').style.display = 'none';
     document.getElementById('tab-predicciones').style.display = 'none';
+	document.getElementById('tab-rankjugadores').style.display = 'none';
 
     // Mostrar la seleccionada
     document.getElementById('tab-' + tab).style.display = '';
