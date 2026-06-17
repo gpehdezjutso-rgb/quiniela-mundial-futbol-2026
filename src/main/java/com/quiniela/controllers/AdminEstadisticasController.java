@@ -53,13 +53,17 @@ public class AdminEstadisticasController {
                 ? usuarioService.obtenerResumenPrediccionesPorFase(faseId)
                 : new ArrayList<>();
 
+        List<Usuario> listaJugadores = usuarioService.obtenerTablaPosiciones();
+        if (listaJugadores == null) listaJugadores = new ArrayList<>();
+
         model.addAttribute("todasFases", todasFases);
         model.addAttribute("faseSeleccionada", faseId);
         model.addAttribute("rankingEjecutivo", ranking);
         model.addAttribute("resumen", resumen);
         model.addAttribute("tabActiva", tab);
         model.addAttribute("nombreUsuario", usuarioActual.getNombre());
-
+        model.addAttribute("resultadosJugadores", listaJugadores);
+        
         return "admin-estadisticas";
     }
 }
