@@ -63,7 +63,7 @@ public class PrediccionDaoImpl implements PrediccionDao {
     public void actualizar(Prediccion prediccion) {
         sessionFactory.getCurrentSession().update(prediccion);
     }
-
+    
     @Override
     public int sumarPuntosPorUsuario(Long usuarioId) {
         String hql = "SELECT SUM(p.puntosGanados) FROM Prediccion p " +
@@ -75,5 +75,16 @@ public class PrediccionDaoImpl implements PrediccionDao {
                 .uniqueResult();
 
         return (suma != null) ? suma.intValue() : 0;
+    }
+    
+    @Override
+    public List<Prediccion> obtenerTodasConPartido() {
+        String hql = "SELECT DISTINCT p FROM Prediccion p " +
+                     "JOIN FETCH p.partido partido " +
+                     "JOIN FETCH partido.fase " +
+                     "JOIN FETCH p.usuario";
+        return sessionFactory.getCurrentSession()
+                .createQuery(hql, Prediccion.class)
+                .getResultList();
     }
 }
