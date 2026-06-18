@@ -221,91 +221,167 @@
     </div>
 
     <!-- ══ PESTAÑA 2: PREDICCIONES ══ -->
-    <div id="tab-predicciones" th:style="${tabActiva != 'predicciones'} ? 'display:none' : ''">        
-		<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-		    <p class="section-title" style="margin:0;">Distribución de apuestas por partido</p>
-		    <a th:href="@{/admin/estadisticas/exportar-predicciones-pdf(faseId=${faseSeleccionada})}"
-		       class="btn-export"
-		       th:classappend="${faseSeleccionada == null} ? ' disabled' : ''">
-		        &#128196; Exportar PDF
-		    </a>
-		</div>
-        <div th:if="${resumen == null or #lists.isEmpty(resumen)}" class="empty-msg"
-             style="background:white; border-radius:10px;">
-            &#128202; Selecciona una fase para ver las predicciones.
-        </div>
+   <!-- ══ PESTAÑA 2: PREDICCIONES ══ -->
+	<div id="tab-predicciones" th:style="${tabActiva != 'predicciones'} ? 'display:none' : ''">        
+	    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+	        <p class="section-title" style="margin:0;">Distribución de apuestas por partido</p>
+	        <p th:text="${#temporals.format(localDate, 'dd MMMM yyyy')}">Fecha</p>
+	        <a th:href="@{/admin/estadisticas/exportar-predicciones-pdf(faseId=${faseSeleccionada})}"
+	           class="btn-export"
+	           th:classappend="${faseSeleccionada == null} ? ' disabled' : ''">
+	            &#128196; Exportar PDF
+	        </a>
+	    </div>
+	
+	    <!-- ══ FILTRO POR FECHA ══ -->
+	    <div th:if="${resumen != null and not #lists.isEmpty(resumen)}"
+	         style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px;
+	                background:white; border-radius:10px; padding:12px 16px;
+	                border:0.5px solid #e0e0e0;">
+	        <span style="font-size:13px; color:#666;">&#128197; Filtrar por fecha del partido:</span>
+	        <label style="font-size:13px; color:#555;">Desde
+	            <input type="date" id="filtro-desde"
+	                   style="margin-left:6px; font-size:13px; padding:4px 8px; border:1px solid #ccc; border-radius:6px;">
+	        </label>
+	        <label style="font-size:13px; color:#555;">Hasta
+	            <input type="date" id="filtro-hasta"
+	                   style="margin-left:6px; font-size:13px; padding:4px 8px; border:1px solid #ccc; border-radius:6px;">
+	        </label>
+	        <button onclick="limpiarFiltroPredicciones()"
+	                style="font-size:12px; padding:5px 12px; border:1px solid #ccc;
+	                       border-radius:6px; background:white; cursor:pointer; color:#555;">
+	            ✕ Limpiar
+	        </button>
+	        <span id="contador-predicciones" style="font-size:12px; color:#999; margin-left:auto;"></span>
+	    </div>
+	
+	    <div th:if="${resumen == null or #lists.isEmpty(resumen)}" class="empty-msg"
+	         style="background:white; border-radius:10px;">
+	        &#128202; Selecciona una fase para ver las predicciones.
+	    </div>
+	
+	    <div id="sin-resultados-fecha" style="display:none; text-align:center; padding:2rem;
+	         background:white; border-radius:10px; color:#aaa; font-size:14px;">
+	        &#128197; Sin partidos en el rango de fechas seleccionado.
+	    </div>
+	
+	    <div class="partidos-grid" th:if="${resumen != null and not #lists.isEmpty(resumen)}">
+	        <div class="partido-card"
+	             th:each="r : ${resumen}"
+	             th:data-fecha="${r.partido.fechaPartido != null ? #temporals.format(r.partido.fechaPartido, 'yyyy-MM-dd') : ''}">
+	
+	            <div class="partido-header">
+	                <div>
+	                    <div class="partido-titulo"
+	                         th:text="${r.partido.equipoLocal + ' vs ' + r.partido.equipoVisitante}"></div>
+	                    <div class="partido-meta"
+	                         th:text="${r.partido.grupo + ' · ' + (r.partido.fechaPartido != null ? #temporals.format(r.partido.fechaPartido, 'dd/MM/yy HH:mm') : 'Fecha por definir')}"></div>
+	                </div>
+	                <div th:if="${r.partido.golesLocal != null}" class="partido-resultado"
+	                     th:text="${r.partido.golesLocal + ' - ' + r.partido.golesVisitante}"></div>
+	                <div th:if="${r.partido.golesLocal == null}" class="partido-resultado pendiente">Por jugar</div>
+	            </div>
+	
+	            <div class="partido-body">
+	                <div>
+	                    <div class="dist-title">&#128202; Distribución de apuestas</div>
+	                    <div th:each="entry : ${r.distribucion}" class="dist-item">
+	                        <span class="dist-marcador" th:text="${entry.key}"></span>
+	                        <div class="dist-bar-wrap">
+	                            <div class="dist-bar"
+	                                 th:classappend="${entry.key == r.marcadorMasApostado} ? ' top' : (${entry.key == r.marcadorMenosApostado} ? ' bottom' : '')"
+	                                 th:style="'width:' + (${r.totalApuestas} > 0 ? ${entry.value * 100 / r.totalApuestas} : 0) + '%'"></div>
+	                        </div>
+	                        <span class="dist-votos"
+	                              th:text="${entry.value} + ' voto' + (${entry.value} > 1 ? 's' : '')"></span>
+	                    </div>
+	                    <div th:if="${#maps.isEmpty(r.distribucion)}"
+	                         style="color:#aaa; font-style:italic; font-size:0.85rem;">Sin apuestas registradas.</div>
+	                </div>
+	
+	                <div class="acertadores-col">
+	                    <div class="acert-section">
+	                        <div class="acert-label exacto">&#127919; Marcador exacto</div>
+	                        <div class="acert-chips" th:if="${not #lists.isEmpty(r.acertadores)}">
+	                            <span th:each="nombre : ${r.acertadores}" class="chip chip-exacto" th:text="${nombre}"></span>
+	                        </div>
+	                        <span th:if="${#lists.isEmpty(r.acertadores)}" class="chip-ninguno">Nadie acertó el marcador exacto</span>
+	                    </div>
+	                    <div class="acert-section">
+	                        <div class="acert-label parcial">&#9989; Acertaron ganador/empate</div>
+	                        <div class="acert-chips" th:if="${not #lists.isEmpty(r.parcialesAcertadores)}">
+	                            <span th:each="nombre : ${r.parcialesAcertadores}" class="chip chip-parcial" th:text="${nombre}"></span>
+	                        </div>
+	                        <span th:if="${#lists.isEmpty(r.parcialesAcertadores)}" class="chip-ninguno">Nadie acertó el resultado</span>
+	                    </div>
+	                    <div class="acert-section" th:if="${r.partido.golesLocal != null}">
+	                        <div class="acert-label" style="color:#dc3545;">&#10060; No acertaron</div>
+	                        <div class="acert-chips" th:if="${not #lists.isEmpty(r.fallidos)}">
+	                            <span th:each="nombre : ${r.fallidos}" class="chip chip-fallido" th:text="${nombre}"></span>
+	                        </div>
+	                        <span th:if="${#lists.isEmpty(r.fallidos)}" class="chip-ninguno">Todos acertaron algo &#127881;</span>
+	                    </div>
+	                </div>
+	            </div>
+	
+	            <div class="partido-footer">
+	                <span class="footer-stat">&#128101; Total: <strong th:text="${r.totalApuestas}"></strong> apuestas</span>
+	                <span class="footer-stat">&#11014; Más votado: <strong th:text="${r.marcadorMasApostado + ' (' + r.votosMarcadorTop + ')'}"></strong></span>
+	                <span class="footer-stat">&#11015; Menos votado: <strong th:text="${r.marcadorMenosApostado + ' (' + r.votosMarcadorBottom + ')'}"></strong></span>
+	                <span class="footer-stat" th:if="${r.partido.golesLocal != null}">&#127919; Exactos: <strong th:text="${#lists.size(r.acertadores)}"></strong></span>
+	                <span class="footer-stat" th:if="${r.partido.golesLocal != null}">&#9989; Ganador/Empate: <strong th:text="${#lists.size(r.parcialesAcertadores)}"></strong></span>
+	                <span class="footer-stat" th:if="${r.partido.golesLocal != null}">&#10060; No acertaron: <strong th:text="${#lists.size(r.fallidos)}"></strong></span>
+	            </div>
+	        </div>
+	    </div>
+	</div>
 
-        <div class="partidos-grid" th:if="${resumen != null and not #lists.isEmpty(resumen)}">
-            <div class="partido-card" th:each="r : ${resumen}">
-
-                <div class="partido-header">
-                    <div>
-                        <div class="partido-titulo"
-                             th:text="${r.partido.equipoLocal + ' vs ' + r.partido.equipoVisitante}"></div>
-                        <div class="partido-meta"
-                             th:text="${r.partido.grupo + ' · ' + (r.partido.fechaPartido != null ? #temporals.format(r.partido.fechaPartido, 'dd/MM/yy HH:mm') : 'Fecha por definir')}"></div>
-                    </div>
-                    <div th:if="${r.partido.golesLocal != null}" class="partido-resultado"
-                         th:text="${r.partido.golesLocal + ' - ' + r.partido.golesVisitante}"></div>
-                    <div th:if="${r.partido.golesLocal == null}" class="partido-resultado pendiente">Por jugar</div>
-                </div>
-
-                <div class="partido-body">
-                    <!-- Distribución -->
-                    <div>
-                        <div class="dist-title">&#128202; Distribución de apuestas</div>
-                        <div th:each="entry : ${r.distribucion}" class="dist-item">
-                            <span class="dist-marcador" th:text="${entry.key}"></span>
-                            <div class="dist-bar-wrap">
-                                <div class="dist-bar"
-                                     th:classappend="${entry.key == r.marcadorMasApostado} ? ' top' : (${entry.key == r.marcadorMenosApostado} ? ' bottom' : '')"
-                                     th:style="'width:' + (${r.totalApuestas} > 0 ? ${entry.value * 100 / r.totalApuestas} : 0) + '%'"></div>
-                            </div>
-                            <span class="dist-votos"
-                                  th:text="${entry.value} + ' voto' + (${entry.value} > 1 ? 's' : '')"></span>
-                        </div>
-                        <div th:if="${#maps.isEmpty(r.distribucion)}"
-                             style="color:#aaa; font-style:italic; font-size:0.85rem;">Sin apuestas registradas.</div>
-                    </div>
-
-                    <!-- Acertadores -->
-                    <div class="acertadores-col">
-                        <div class="acert-section">
-                            <div class="acert-label exacto">&#127919; Marcador exacto</div>
-                            <div class="acert-chips" th:if="${not #lists.isEmpty(r.acertadores)}">
-                                <span th:each="nombre : ${r.acertadores}" class="chip chip-exacto" th:text="${nombre}"></span>
-                            </div>
-                            <span th:if="${#lists.isEmpty(r.acertadores)}" class="chip-ninguno">Nadie acertó el marcador exacto</span>
-                        </div>
-                        <div class="acert-section">
-                            <div class="acert-label parcial">&#9989; Acertaron ganador/empate</div>
-                            <div class="acert-chips" th:if="${not #lists.isEmpty(r.parcialesAcertadores)}">
-                                <span th:each="nombre : ${r.parcialesAcertadores}" class="chip chip-parcial" th:text="${nombre}"></span>
-                            </div>
-                            <span th:if="${#lists.isEmpty(r.parcialesAcertadores)}" class="chip-ninguno">Nadie acertó el resultado</span>
-                        </div>
-                        <div class="acert-section" th:if="${r.partido.golesLocal != null}">
-                            <div class="acert-label" style="color:#dc3545;">&#10060; No acertaron</div>
-                            <div class="acert-chips" th:if="${not #lists.isEmpty(r.fallidos)}">
-                                <span th:each="nombre : ${r.fallidos}" class="chip chip-fallido" th:text="${nombre}"></span>
-                            </div>
-                            <span th:if="${#lists.isEmpty(r.fallidos)}" class="chip-ninguno">Todos acertaron algo &#127881;</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="partido-footer">
-                    <span class="footer-stat">&#128101; Total: <strong th:text="${r.totalApuestas}"></strong> apuestas</span>
-                    <span class="footer-stat">&#11014; Más votado: <strong th:text="${r.marcadorMasApostado + ' (' + r.votosMarcadorTop + ')'}"></strong></span>
-                    <span class="footer-stat">&#11015; Menos votado: <strong th:text="${r.marcadorMenosApostado + ' (' + r.votosMarcadorBottom + ')'}"></strong></span>
-                    <span class="footer-stat" th:if="${r.partido.golesLocal != null}">&#127919; Exactos: <strong th:text="${#lists.size(r.acertadores)}"></strong></span>
-                    <span class="footer-stat" th:if="${r.partido.golesLocal != null}">&#9989; Ganador/Empate: <strong th:text="${#lists.size(r.parcialesAcertadores)}"></strong></span>
-                    <span class="footer-stat" th:if="${r.partido.golesLocal != null}">&#10060; No acertaron: <strong th:text="${#lists.size(r.fallidos)}"></strong></span>
-                </div>
-
-            </div>
-        </div>
-    </div>
+	<script>
+	(function () {
+	    const desde   = document.getElementById('filtro-desde');
+	    const hasta   = document.getElementById('filtro-hasta');
+	    const sinRes  = document.getElementById('sin-resultados-fecha');
+	    const contador = document.getElementById('contador-predicciones');
+	
+	    function filtrarPredicciones() {
+	        const cards = document.querySelectorAll('#tab-predicciones .partido-card');
+	        if (!cards.length) return;
+	
+	        const dDesde = desde && desde.value ? new Date(desde.value) : null;
+	        const dHasta = hasta && hasta.value ? new Date(hasta.value) : null;
+	        let visibles = 0;
+	
+	        cards.forEach(card => {
+	            const fechaStr = card.dataset.fecha;
+	
+	            // Partidos sin fecha definida: solo se ocultan si hay filtro activo
+	            if (!fechaStr) {
+	                const ocultar = dDesde || dHasta;
+	                card.style.display = ocultar ? 'none' : '';
+	                if (!ocultar) visibles++;
+	                return;
+	            }
+	
+	            const fecha = new Date(fechaStr);
+	            const visible = (!dDesde || fecha >= dDesde) && (!dHasta || fecha <= dHasta);
+	            card.style.display = visible ? '' : 'none';
+	            if (visible) visibles++;
+	        });
+	
+	        if (sinRes) sinRes.style.display = visibles === 0 ? 'block' : 'none';
+	        if (contador) contador.textContent = visibles + ' de ' + cards.length + ' partido' + (cards.length !== 1 ? 's' : '');
+	    }
+	
+	    window.limpiarFiltroPredicciones = function () {
+	        if (desde) desde.value = '';
+	        if (hasta) hasta.value = '';
+	        filtrarPredicciones();
+	    };
+	
+	    if (desde) desde.addEventListener('change', filtrarPredicciones);
+	    if (hasta) hasta.addEventListener('change', filtrarPredicciones);
+	})();
+	</script>
 	
 	<!-- ══ PESTAÑA 3: RANKING JUGADORES ══ -->
 	   <div id="tab-rankjugadores" th:style="${ tabActiva != 'rankjugadores'} ? 'display:none' : ''">	
