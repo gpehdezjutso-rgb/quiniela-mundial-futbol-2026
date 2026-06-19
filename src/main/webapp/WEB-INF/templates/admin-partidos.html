@@ -166,7 +166,9 @@
                     <th>Estadio</th>
                 </tr>
             </thead>
-            <tbody>
+            <!-- ✅ FIX: id="tbody-partidos" agregado para que el filtro de fechas
+                 solo afecte a estas filas y NO a las <tr> del formulario de registro -->
+            <tbody id="tbody-partidos">
                 <tr th:each="p : ${partidos}"
                     th:data-fecha="${p.fechaPartido != null ? #temporals.format(p.fechaPartido, 'yyyy-MM-dd') : ''}">
                     <td th:text="${p.id}" style="font-family:monospace;color:#6c757d;"></td>
@@ -241,7 +243,9 @@
         var sinRes   = document.getElementById('sin-resultados-partidos');
 
         function filtrar() {
-            var filas  = document.querySelectorAll('tbody tr');
+            // ✅ FIX: selector acotado a #tbody-partidos para NO afectar
+            //    las <tr> del formulario de registro (también tiene un <table> interno)
+            var filas  = document.querySelectorAll('#tbody-partidos tr');
             var dDesde = desde.value ? new Date(desde.value) : null;
             var dHasta = hasta.value ? new Date(hasta.value) : null;
             var visibles = 0;
@@ -263,7 +267,8 @@
                 if (visible) visibles++;
             });
 
-            var total = document.querySelectorAll('tbody tr').length;
+            // ✅ FIX: total también acotado a #tbody-partidos
+            var total = document.querySelectorAll('#tbody-partidos tr').length;
             sinRes.style.display  = visibles === 0 ? 'block' : 'none';
             contador.textContent  = visibles + ' de ' + total + ' partido' + (total !== 1 ? 's' : '');
         }
