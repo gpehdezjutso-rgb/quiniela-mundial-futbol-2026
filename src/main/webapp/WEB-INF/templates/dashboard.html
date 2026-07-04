@@ -215,6 +215,20 @@
 		       style="font-size:0.7rem; padding:4px 10px; text-decoration:none;">
 		        &#128190; Exportar a Excel
 		    </a>
+			<form th:action="@{/dashboard}" method="get" style="margin:14px 0;">
+			    <label for="faseSelect" style="font-size:0.82rem; font-weight:bold; color:#555; margin-right:8px;">
+			        Fase:
+			    </label>
+			    <select id="faseSelect" name="faseId" onchange="this.form.submit()"
+			            style="padding:6px 10px; border-radius:4px; border:1px solid #ccc; font-size:0.85rem;">
+			        <option th:each="f : ${fasesActivas}"
+			                th:value="${f.id}"
+			                th:text="${f.nombre}"
+			                th:selected="${faseSeleccionada != null and f.id == faseSeleccionada.id}">
+			        </option>
+			    </select>
+			</form>
+			
         <div class="table-scroll" style="max-height:420px;">
         <table class="match-table">
             <thead>
@@ -294,12 +308,13 @@
 						        <div th:if="${dto.prediccion != null and (param.cambiarPartidoId == null or param.cambiarPartidoId[0] != #strings.toString(dto.partido.id))}"
 						             class="form-inline">
 						            <span class="badge-apuesta"
-						                  th:text="${dto.prediccion.golesLocalPrediccion + ' - ' + dto.prediccion.golesVisitantePrediccion}"></span>
-						            <a class="btn-edit" th:href="@{/dashboard(cambiarPartidoId=${dto.partido.id})}">Modificar</a>
+						                  th:text="${dto.prediccion.golesLocalPrediccion + ' - ' + dto.prediccion.golesVisitantePrediccion}"></span>						            
+									<a class="btn-edit" th:href="@{/dashboard(cambiarPartidoId=${dto.partido.id}, faseId=${faseSeleccionada != null ? faseSeleccionada.id : null})}">Modificar</a>
 						        </div>
 						        <div th:if="${dto.prediccion == null or (param.cambiarPartidoId != null and param.cambiarPartidoId[0] == #strings.toString(dto.partido.id))}">
 						            <form th:action="@{/dashboard/apuesta}" method="post" class="form-inline">
 						                <input type="hidden" name="partidoId" th:value="${dto.partido.id}" />
+										<input type="hidden" name="faseId" th:value="${faseSeleccionada != null ? faseSeleccionada.id : ''}" />										    
 						                <input type="number" name="golesLocalPrediccion" min="0" class="input-score"
 						                       th:value="${dto.prediccion != null ? dto.prediccion.golesLocalPrediccion : ''}"
 						                       placeholder="L" required />
@@ -391,48 +406,5 @@
         </div>
     </div>
 </div>
-
-<script>
-(function () {
-    var tabla = document.getElementById('tablaPartidos');
-    if (!tabla) return;
-    var filas = Array.from(tabla.querySelectorAll('tbody tr'));
-    var fasesOrden = [], conteos = {};
-    filas.forEach(function (tr) {
-        var fase = tr.getAttribute('data-fase') || 'Sin fase';
-        if (!conteos[fase]) { conteos[fase] = 0; fasesOrden.push(fase); }
-        conteos[fase]++;
-    });
-    var container = document.getElementById('tabsContainer');
-    var btnTodas = document.createElement('button');
-    btnTodas.className = 'tab-btn';
-    btnTodas.type = 'button';
-    btnTodas.innerHTML = 'Todas <span class="tab-count">' + filas.length + '</span>';
-    btnTodas.dataset.fase = '__todas__';
-    container.appendChild(btnTodas);
-    fasesOrden.forEach(function (fase) {
-        var btn = document.createElement('button');
-        btn.className = 'tab-btn';
-        btn.type = 'button';
-        btn.innerHTML = fase + ' <span class="tab-count">' + conteos[fase] + '</span>';
-        btn.dataset.fase = fase;
-        container.appendChild(btn);
-    });
-    function activarTab(faseSeleccionada) {
-        container.querySelectorAll('.tab-btn').forEach(function (b) {
-            b.classList.toggle('active', b.dataset.fase === faseSeleccionada);
-        });
-        filas.forEach(function (tr) {
-            var faseFila = tr.getAttribute('data-fase') || 'Sin fase';
-            tr.style.display = (faseSeleccionada === '__todas__' || faseFila === faseSeleccionada) ? '' : 'none';
-        });
-    }
-    container.addEventListener('click', function (e) {
-        var btn = e.target.closest('.tab-btn');
-        if (btn) activarTab(btn.dataset.fase);
-    });
-    activarTab(fasesOrden[0]);
-})();
-</script>
 </body>
 </html>
