@@ -44,7 +44,17 @@ public class AdminEstadisticasController {
         if (usuarioActual == null) return "redirect:/?errorSesion=true";
 
         if (faseId == null) {
-            Fase faseActiva = catalogosService.obtenerFaseActiva();
+        	Fase faseActiva = null;
+        	List<Fase> fasesActivas = catalogosService.obtenerFasesActivas();
+            
+            List<Long> fases = new ArrayList<>();
+            
+            for ( int i = 0; i < fasesActivas.size(); i++ ) {        
+            	fases.add(fasesActivas.get(i).getId());
+            	faseActiva = fasesActivas.get(i);
+            }            
+        	
+            //Fase faseActiva = catalogosService.obtenerFaseActiva();
             if (faseActiva != null) faseId = faseActiva.getId();
         }
 
