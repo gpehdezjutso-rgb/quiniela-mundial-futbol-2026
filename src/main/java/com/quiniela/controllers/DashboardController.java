@@ -54,6 +54,7 @@ public class DashboardController {
     @Autowired
     private UsuarioService usuarioService;
 
+    /*
     @SuppressWarnings("null")
 	@GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
@@ -111,6 +112,85 @@ public class DashboardController {
         model.addAttribute("tablaEquipos", listaEstadisticas);
         
         return "dashboard";
+    }*/
+    
+    @SuppressWarnings("null")
+    @GetMapping("/dashboard")
+    public String dashboard(@RequestParam(value = "faseId", required = false) Long faseId,
+                             HttpSession session, Model model) {
+
+        Usuario usuarioActual = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuarioActual == null) {
+            return "redirect:/?errorSesion=true";
+        }
+
+        // Refrescar desde BD para evitar valores obsoletos de la sesión
+        usuarioActual = usuarioService.obtenerUsuarioPorId(usuarioActual.getId());
+        session.setAttribute("usuarioLogueado", usuarioActual);
+
+        // ── Fases activas, ordenadas por el campo 'orden' ──
+        List<Fase> fasesActivas = catalogosService.obtenerFasesActivas();
+        if (fasesActivas == null) fasesActivas = new ArrayList<>();
+        fasesActivas.sort(java.util.Comparator.comparing(Fase::getOrdenFase));
+
+        // ── Determinar la fase seleccionada ──
+        Fase faseSeleccionada = null;
+        if (faseId != null) {
+            final Long faseIdBuscada = faseId;
+            faseSeleccionada = fasesActivas.stream()
+                    .filter(f -> f.getId().equals(faseIdBuscada))
+                    .findFirst()
+                    .orElse(null);
+        }
+        if (faseSeleccionada == null) {
+            // Default: la última fase registrada según 'orden'
+            faseSeleccionada = fasesActivas.stream()
+                    .max(java.util.Comparator.comparing(Fase::getOrdenFase))
+                    .orElse(null);
+        }
+
+        // ── Partidos SOLO de la fase seleccionada ──
+        List<Long> fases = new ArrayList<>();
+        if (faseSeleccionada != null) {
+            fases.add(faseSeleccionada.getId());
+        }
+        List<Partido> partidos = partidoService.obtenerPartidosPorFasesActivas(fases);
+        if (partidos == null) partidos = new ArrayList<>();
+
+        List<Prediccion> apuestas = prediccionService.listarApuestasUsuario(usuarioActual.getId());
+        if (apuestas == null) apuestas = new ArrayList<>();
+
+        List<PartidoDTO> partidosConApuesta = new ArrayList<>();
+        for (Partido p : partidos) {
+            Prediccion apuestaEncontrada = apuestas.stream()
+                    .filter(a -> a.getPartido().getId().equals(p.getId()))
+                    .findFirst()
+                    .orElse(null);
+            partidosConApuesta.add(new PartidoDTO(p, apuestaEncontrada));
+        }
+
+        List<EstadisticaEquipo> listaEstadisticas = partidoService.obtenerTablaGeneralMundial();
+        if (listaEstadisticas == null) listaEstadisticas = new ArrayList<>();
+
+        List<Usuario> listaJugadores = usuarioService.obtenerTablaPosiciones();
+        if (listaJugadores == null) listaJugadores = new ArrayList<>();
+
+        int[] estadisticas = prediccionService.obtenerEstadisticasUsuario(usuarioActual.getId());
+
+        model.addAttribute("partidosDTO", partidosConApuesta);
+        model.addAttribute("usuarioActual", usuarioActual);
+        model.addAttribute("apuestas", apuestas);
+        model.addAttribute("aciertosExactos", estadisticas[0]);
+        model.addAttribute("aciertosParciales", estadisticas[1]);
+        model.addAttribute("titulo", "Quiniela Mundial 2026");
+        model.addAttribute("resultadosJugadores", listaJugadores);
+        model.addAttribute("tablaEquipos", listaEstadisticas);
+
+        // ── NUEVO: para el combo de fases ──
+        model.addAttribute("fasesActivas", fasesActivas);
+        model.addAttribute("faseSeleccionada", faseSeleccionada);
+
+        return "dashboard";
     }
     
     @ModelAttribute("ahora")
@@ -118,6 +198,7 @@ public class DashboardController {
         return LocalDateTime.now(ZoneId.of("America/Mexico_City"));
     }
 
+    /*
     @PostMapping("/dashboard/apuesta")
     public String guardarApuesta(@RequestParam("partidoId") Long partidoId,
                                  @RequestParam("golesLocalPrediccion") Integer golesLocalPrediccion,
@@ -145,6 +226,38 @@ public class DashboardController {
             case PARTIDO_CON_RESULTADO: return "redirect:/dashboard?errorApuesta=resultado";
             case PARTIDO_EXPIRADO:    return "redirect:/dashboard?errorApuesta=expirado";
             default:                  return "redirect:/dashboard?errorApuesta=invalido";
+        }
+    }
+    */
+    
+    @PostMapping("/dashboard/apuesta")
+    public String guardarApuesta(@RequestParam("partidoId") Long partidoId,
+                                 @RequestParam("golesLocalPrediccion") Integer golesLocalPrediccion,
+                                 @RequestParam("golesVisitantePrediccion") Integer golesVisitantePrediccion,
+                                 @RequestParam(value = "faseId", required = false) Long faseId,
+                                 HttpSession session) {
+        Usuario usuarioActual = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuarioActual == null) {
+            return "redirect:/?errorSesion=true";
+        }
+
+        Partido partido = partidoService.obtenerPartidoPorId(partidoId);
+
+        LocalDateTime limiteApuesta = partido.getFechaPartido().minusHours(1);
+        String sufijoFase = (faseId != null) ? "&faseId=" + faseId : "";
+
+        if (LocalDateTime.now(ZoneId.of("America/Mexico_City")).isAfter(limiteApuesta)) {
+            return "redirect:/dashboard?errorApuesta=expirado" + sufijoFase;
+        }
+
+        ResultadoApuesta resultado = prediccionService.guardarApuesta(
+                usuarioActual.getId(), partidoId, golesLocalPrediccion, golesVisitantePrediccion);
+
+        switch (resultado) {
+            case EXITO:               return "redirect:/dashboard?apuestaOk=true" + sufijoFase;
+            case PARTIDO_CON_RESULTADO: return "redirect:/dashboard?errorApuesta=resultado" + sufijoFase;
+            case PARTIDO_EXPIRADO:    return "redirect:/dashboard?errorApuesta=expirado" + sufijoFase;
+            default:                  return "redirect:/dashboard?errorApuesta=invalido" + sufijoFase;
         }
     }
     
