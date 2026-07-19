@@ -177,6 +177,15 @@ public class DashboardController {
 
         int[] estadisticas = prediccionService.obtenerEstadisticasUsuario(usuarioActual.getId());
 
+        // ── NUEVO: posición del usuario actual dentro del ranking (1-based; 0 = no encontrado) ──
+        int posicionActual = 0;
+        for (int i = 0; i < listaJugadores.size(); i++) {
+            if (listaJugadores.get(i).getId().equals(usuarioActual.getId())) {
+                posicionActual = i + 1;
+                break;
+            }
+        }
+
         model.addAttribute("partidosDTO", partidosConApuesta);
         model.addAttribute("usuarioActual", usuarioActual);
         model.addAttribute("apuestas", apuestas);
@@ -185,6 +194,7 @@ public class DashboardController {
         model.addAttribute("titulo", "Quiniela Mundial 2026");
         model.addAttribute("resultadosJugadores", listaJugadores);
         model.addAttribute("tablaEquipos", listaEstadisticas);
+        model.addAttribute("posicionActual", posicionActual);
 
         // ── NUEVO: para el combo de fases ──
         model.addAttribute("fasesActivas", fasesActivas);
