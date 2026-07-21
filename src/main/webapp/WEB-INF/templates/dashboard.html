@@ -571,7 +571,10 @@
         <p>
             &#161;Felicidades, <strong th:text="${usuarioActual.nombre}">Jugador</strong>!
             El Mundial ha terminado y quedaste dentro del podio con
-            <strong th:text="${usuarioActual.puntosTotales}">0</strong> puntos. &#161;Enhorabuena, campe&#243;n de la quiniela!
+            <strong th:text="${usuarioActual.puntosTotales}">0</strong> puntos.
+            <span th:if="${posicionActual == 1}">&#161;Enhorabuena, campe&#243;n de la quiniela!</span>
+            <span th:if="${posicionActual == 2}">&#161;Enhorabuena, subcampe&#243;n de la quiniela!</span>
+            <span th:if="${posicionActual == 3}">&#161;Enhorabuena, terminaste en tercer lugar de la quiniela!</span>
         </p>
 
         <button type="button" class="congrats-btn" onclick="cerrarFelicitacion()">&#127942; Genial</button>
