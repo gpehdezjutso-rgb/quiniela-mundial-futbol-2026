@@ -206,7 +206,7 @@
         .ranking-full-table tr.yo-row td { outline: 2px solid #0066cc; outline-offset: -2px; }
         .ranking-full-table .pts-cell { font-weight: bold; color: #4c2988; }
 
-        /* ── PANEL DE FELICITACIÓN (TOP 3) ── */
+        /* ── PANEL DE FELICITACIÓN (RESULTADOS FINALES) ── */
         .congrats-overlay {
             display: none; position: fixed; inset: 0; z-index: 1100;
             background: rgba(0,0,0,0.6);
@@ -226,6 +226,8 @@
         .congrats-box.oro    { background: linear-gradient(160deg,#ffd76a,#d4a017); }
         .congrats-box.plata  { background: linear-gradient(160deg,#e6e9ec,#9aa3ab); color:#2b2b2b; }
         .congrats-box.bronce { background: linear-gradient(160deg,#e8a568,#a85c2e); }
+        /* Panel para jugadores fuera del podio: agradecimiento por participar */
+        .congrats-box.participacion { background: linear-gradient(160deg,#4a90d9,#0066cc); }
         .congrats-medalla { font-size: 3.2rem; display: block; margin-bottom: 6px; }
         .congrats-box h2 { margin: 0 0 6px; font-size: 1.3rem; }
         .congrats-box p { margin: 0; font-size: 0.92rem; opacity: 0.95; }
@@ -549,7 +551,7 @@
     </div>
 </div>
 
-<!-- ══════════════ PANEL DE FELICITACIÓN (TOP 3) ══════════════ -->
+<!-- ══════════════ PANEL DE FELICITACIÓN - RESULTADOS FINALES (TOP 3) ══════════════ -->
 <div class="congrats-overlay" id="congratsOverlay"
      th:if="${posicionActual != null and posicionActual >= 1 and posicionActual <= 3}"
      th:data-posicion="${posicionActual}"
@@ -562,17 +564,40 @@
         <span class="congrats-medalla" th:if="${posicionActual == 2}">&#129352;</span>
         <span class="congrats-medalla" th:if="${posicionActual == 3}">&#129353;</span>
 
-        <h2 th:if="${posicionActual == 1}">&#161;Vas primer lugar!</h2>
-        <h2 th:if="${posicionActual == 2}">&#161;Vas en segundo lugar!</h2>
-        <h2 th:if="${posicionActual == 3}">&#161;Vas en tercer lugar!</h2>
+        <h2 th:if="${posicionActual == 1}">&#161;Terminaste en primer lugar!</h2>
+        <h2 th:if="${posicionActual == 2}">&#161;Terminaste en segundo lugar!</h2>
+        <h2 th:if="${posicionActual == 3}">&#161;Terminaste en tercer lugar!</h2>
 
         <p>
             &#161;Felicidades, <strong th:text="${usuarioActual.nombre}">Jugador</strong>!
-            Est&#225;s dentro del podio con
-            <strong th:text="${usuarioActual.puntosTotales}">0</strong> puntos. &#161;Sigue as&#237;!
+            El Mundial ha terminado y quedaste dentro del podio con
+            <strong th:text="${usuarioActual.puntosTotales}">0</strong> puntos. &#161;Enhorabuena, campe&#243;n de la quiniela!
         </p>
 
-        <button type="button" class="congrats-btn" onclick="cerrarFelicitacion()">&#127881; Genial</button>
+        <button type="button" class="congrats-btn" onclick="cerrarFelicitacion()">&#127942; Genial</button>
+    </div>
+</div>
+
+<!-- ══════════════ PANEL DE AGRADECIMIENTO POR PARTICIPAR (RESTO DE JUGADORES) ══════════════ -->
+<div class="congrats-overlay" id="participacionOverlay"
+     th:if="${posicionActual == null or posicionActual < 1 or posicionActual > 3}"
+     th:data-posicion="${posicionActual}"
+     th:data-usuario="${usuarioActual.id}">
+    <div class="congrats-box participacion">
+        <button type="button" class="congrats-close" onclick="cerrarParticipacion()">&times;</button>
+
+        <span class="congrats-medalla">&#9917;</span>
+
+        <h2>&#161;Gracias por participar!</h2>
+
+        <p>
+            El Mundial ha terminado. Gracias, <strong th:text="${usuarioActual.nombre}">Jugador</strong>,
+            por acompañarnos en toda la quiniela con
+            <strong th:text="${usuarioActual.puntosTotales}">0</strong> puntos acumulados.
+            &#161;Nos vemos en la pr&#243;xima edici&#243;n!
+        </p>
+
+        <button type="button" class="congrats-btn" onclick="cerrarParticipacion()">&#128077; Gracias</button>
     </div>
 </div>
 
@@ -584,21 +609,29 @@
         document.getElementById('rankingModalOverlay').classList.remove('abierto');
     }
 
-    // Panel de felicitación: se muestra una sola vez por sesión de navegador
-    // para el mismo usuario y la misma posición (evita ser repetitivo al recargar).
-    document.addEventListener('DOMContentLoaded', function () {
-        var overlay = document.getElementById('congratsOverlay');
+    // Paneles de felicitación / agradecimiento: se muestran una sola vez por sesión
+    // de navegador para el mismo usuario y la misma posición (evita ser repetitivo al recargar).
+    function mostrarPanelUnaVez(overlayId, prefijoClave) {
+        var overlay = document.getElementById(overlayId);
         if (!overlay) return;
 
-        var clave = 'felicitacionMostrada_' + overlay.dataset.usuario + '_' + overlay.dataset.posicion;
+        var clave = prefijoClave + '_' + overlay.dataset.usuario + '_' + overlay.dataset.posicion;
         if (sessionStorage.getItem(clave)) return;
 
         overlay.classList.add('abierto');
         sessionStorage.setItem(clave, 'true');
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        mostrarPanelUnaVez('congratsOverlay', 'felicitacionMostrada');
+        mostrarPanelUnaVez('participacionOverlay', 'participacionMostrada');
     });
 
     function cerrarFelicitacion() {
         document.getElementById('congratsOverlay').classList.remove('abierto');
+    }
+    function cerrarParticipacion() {
+        document.getElementById('participacionOverlay').classList.remove('abierto');
     }
 </script>
 </body>
