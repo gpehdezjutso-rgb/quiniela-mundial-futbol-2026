@@ -609,22 +609,17 @@
         document.getElementById('rankingModalOverlay').classList.remove('abierto');
     }
 
-    // Paneles de felicitación / agradecimiento: se muestran una sola vez por sesión
-    // de navegador para el mismo usuario y la misma posición (evita ser repetitivo al recargar).
-    function mostrarPanelUnaVez(overlayId, prefijoClave) {
+    // Paneles de felicitación / agradecimiento: se muestran cada vez que el usuario
+    // accede al dashboard (sin recordar si ya se mostraron antes).
+    function mostrarPanel(overlayId) {
         var overlay = document.getElementById(overlayId);
         if (!overlay) return;
-
-        var clave = prefijoClave + '_' + overlay.dataset.usuario + '_' + overlay.dataset.posicion;
-        if (sessionStorage.getItem(clave)) return;
-
         overlay.classList.add('abierto');
-        sessionStorage.setItem(clave, 'true');
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        mostrarPanelUnaVez('congratsOverlay', 'felicitacionMostrada');
-        mostrarPanelUnaVez('participacionOverlay', 'participacionMostrada');
+        mostrarPanel('congratsOverlay');
+        mostrarPanel('participacionOverlay');
     });
 
     function cerrarFelicitacion() {
